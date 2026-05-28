@@ -35,6 +35,8 @@ export interface AcRow {
   winner_party_norm_2026: string;
   margin_pct_2021: number;
   margin_pct_2026: number;
+  /** 2026 margin − 2021 margin (percentage points). */
+  margin_delta?: number;
   winner_share_pct_2021?: number;
   winner_share_pct_2026?: number;
   turnout_pct_2021?: number | null;

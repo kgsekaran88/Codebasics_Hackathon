@@ -204,7 +204,65 @@ type MarginRow = {
   region: string;
   ac_number?: number;
   ac_name?: string;
+  /** 2026 margin − 2021 margin (pp); negative = race tightened. */
+  margin_delta?: number;
+  winner_share_pct_2026?: number;
+  n_candidates_2026?: number;
 };
+
+export type MarginBubbleSizeMode =
+  | "margin_shift"
+  | "fragmentation"
+  | "ballot_size"
+  | "fixed";
+
+export const MARGIN_BUBBLE_SIZE_LABELS: Record<MarginBubbleSizeMode, string> = {
+  margin_shift: "|Margin change| (pp)",
+  fragmentation: "Fragmentation (low winner %)",
+  ballot_size: "Candidates on ballot",
+  fixed: "Fixed size",
+};
+
+function marginSizeMetric(row: MarginRow, mode: MarginBubbleSizeMode): number {
+  switch (mode) {
+    case "margin_shift":
+      return Math.abs(row.margin_delta ?? row.margin_pct_2026 - row.margin_pct_2021);
+    case "fragmentation":
+      return Math.max(0, 100 - (row.winner_share_pct_2026 ?? 50));
+    case "ballot_size":
+      return row.n_candidates_2026 ?? 10;
+    default:
+      return 1;
+  }
+}
+
+function marginSizeMetricLabel(mode: MarginBubbleSizeMode, row: MarginRow): string {
+  switch (mode) {
+    case "margin_shift": {
+      const d = row.margin_delta ?? row.margin_pct_2026 - row.margin_pct_2021;
+      return `Margin change: ${d >= 0 ? "+" : ""}${d.toFixed(1)} pp`;
+    }
+    case "fragmentation":
+      return `Winner share 2026: ${(row.winner_share_pct_2026 ?? 0).toFixed(1)}%`;
+    case "ballot_size":
+      return `Candidates on ballot: ${row.n_candidates_2026 ?? "—"}`;
+    default:
+      return "";
+  }
+}
+
+function scaleMetricToSymbolSize(
+  metric: number,
+  allMetrics: number[],
+  sizeMin: number,
+  sizeMax: number
+): number {
+  const lo = Math.min(...allMetrics);
+  const hi = Math.max(...allMetrics);
+  if (hi <= lo) return Math.round((sizeMin + sizeMax) / 2);
+  const t = (metric - lo) / (hi - lo);
+  return Math.round(sizeMin + Math.sqrt(t) * (sizeMax - sizeMin));
+}
 
 function marginAxisExtent(values: number[], pad = 2): { min: number; max: number } {
   if (!values.length) return { min: 0, max: 40 };
@@ -217,16 +275,23 @@ function marginAxisExtent(values: number[], pad = 2): { min: number; max: number
 }
 
 export type MarginScatterOpts = {
-  /** ECharts symbolSize (default 14). Use UI slider on Margins page. */
+  /** Used when sizeMode is "fixed". */
   symbolSize?: number;
+  /** Encode bubble area by a descriptive metric (default margin_shift). */
+  sizeMode?: MarginBubbleSizeMode;
+  /** Min / max pixel diameter when sizeMode ≠ fixed. */
+  sizeRange?: [number, number];
 };
 
-/** 2021 vs 2026 margin scatter — axes fit data range; optional dot size. */
+/** 2021 vs 2026 margin scatter — axes fit data; bubble area can encode a third measure. */
 export function marginBeeswarmOption(
   rows: MarginRow[],
   opts: MarginScatterOpts = {}
 ): EChartsOption {
-  const symbolSize = opts.symbolSize ?? 14;
+  const sizeMode = opts.sizeMode ?? "margin_shift";
+  const [sizeMin, sizeMax] = opts.sizeRange ?? [6, 22];
+  const fixedSize = opts.symbolSize ?? 14;
+  const allMetrics = rows.map((r) => marginSizeMetric(r, sizeMode));
   const byRegion: Record<string, MarginRow[]> = {};
   rows.forEach((r) => {
     if (!byRegion[r.region]) byRegion[r.region] = [];
@@ -272,7 +337,11 @@ export function marginBeeswarmOption(
         const d = p.data;
         if (!d) return "";
         const title = d.ac_name ? `${d.ac_number}. ${d.ac_name}` : p.seriesName ?? "";
-        return `${title}<br/>2021 margin: ${d.margin_pct_2021?.toFixed(1)}%<br/>2026 margin: ${d.margin_pct_2026?.toFixed(1)}%`;
+        const extra =
+          sizeMode !== "fixed"
+            ? `<br/><em>${marginSizeMetricLabel(sizeMode, d)}</em>`
+            : "";
+        return `${title}<br/>2021 margin: ${d.margin_pct_2021?.toFixed(1)}%<br/>2026 margin: ${d.margin_pct_2026?.toFixed(1)}%${extra}`;
       },
     },
     legend: {
@@ -300,18 +369,28 @@ export function marginBeeswarmOption(
       ...regions.map((region) => ({
         name: REGION_SHORT[region as keyof typeof REGION_SHORT] ?? region,
         type: "scatter" as const,
-        symbolSize,
         z: 2,
-        data: byRegion[region].map((r) => ({
-          value: [r.margin_pct_2021, r.margin_pct_2026],
-          margin_pct_2021: r.margin_pct_2021,
-          margin_pct_2026: r.margin_pct_2026,
-          ac_number: r.ac_number,
-          ac_name: r.ac_name,
-          region: r.region,
-        })),
+        data: byRegion[region].map((r) => {
+          const metric = marginSizeMetric(r, sizeMode);
+          const bubbleSize =
+            sizeMode === "fixed"
+              ? fixedSize
+              : scaleMetricToSymbolSize(metric, allMetrics, sizeMin, sizeMax);
+          return {
+            value: [r.margin_pct_2021, r.margin_pct_2026],
+            symbolSize: bubbleSize,
+            margin_pct_2021: r.margin_pct_2021,
+            margin_pct_2026: r.margin_pct_2026,
+            margin_delta: r.margin_delta,
+            winner_share_pct_2026: r.winner_share_pct_2026,
+            n_candidates_2026: r.n_candidates_2026,
+            ac_number: r.ac_number,
+            ac_name: r.ac_name,
+            region: r.region,
+          };
+        }),
         itemStyle: { color: REGION_COLORS[region] ?? "#78909C", opacity: 0.82 },
-        emphasis: { scale: 1.35 },
+        emphasis: { scale: 1.12 },
       })),
     ],
   };
