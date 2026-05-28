@@ -1,0 +1,17 @@
+{
+  "election_id": "tn-assembly-2026",
+  "jurisdiction": "Tamil Nadu",
+  "body": "Legislative Assembly",
+  "constituency_count": 234,
+  "years": [2021, 2026],
+  "regions": ["Chennai Metro", "North", "Central", "Kongu", "Delta", "South"],
+  "reserved_categories": ["GEN", "SC", "ST"],
+  "data_files": {
+    "results_2021": "input_files_for_participants_rpc/data/tn_2021_results.csv",
+    "results_2026": "input_files_for_participants_rpc/data/tn_2026_results.csv",
+    "constituency_master": "input_files_for_participants_rpc/data/constituency_master.csv"
+  },
+  "processed_dir": "data/processed",
+  "party_normalize": "data/processed/party_normalize.csv",
+  "notes": "Swap paths and re-run scripts/build_processed_data.py for another state or election cycle."
+}

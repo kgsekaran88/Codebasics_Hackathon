@@ -1,0 +1,50 @@
+---
+description: TN Assembly Election RPC #21 — execution plan, constraints, and story strategy
+alwaysApply: true
+---
+
+# TN Election RPC #21 — Agent Context
+
+Read **`HACKATHON_EXECUTION_PLAN.md`** (submission plan) and **`docs/VISUAL_AND_REFERENCE_MASTER.md`** (global dashboards, creative viz, accessibility, India data sources, build blueprint).
+
+## Challenge summary
+- **AtliQ Media** freelance analyst: neutral 60-min TV show on **2026 TN Assembly** (ECI data only).
+- **Deadline:** 28 May 2026, 11:59 PM IST. **Prize:** ₹10,000.
+- **70% storytelling / 30% hygiene.** Video (5–7 min) is scored first.
+
+## Deliverables (priority)
+1. Video pitch (5–7 min) → 2. Deck (8–10 slides + editorial recommendation) → 3. Public GitHub (reproducible notebook + README) → 4. Dashboard (optional) → 5. LinkedIn + RPC page submission.
+
+## Hard rules
+- ECI public data only. No exit polls, news, social media.
+- No causal claims, predictions, leader photos, or party symbols.
+- Neutral tone — partisanship = disqualification.
+- AI allowed for data work; human owns story and framing.
+
+## Data
+- `input_files_for_participants_rpc/data/`: `tn_2021_results.csv`, `tn_2026_results.csv`, `constituency_master.csv`
+- Join on **`ac_number`** (not constituency name — spelling differs).
+- **2026 `turnout` is blank** — scrape ECI if Q5 used.
+- See `metadata.txt` for column definitions.
+
+## Recommended story (data-informed)
+- **Headline angle:** 2026 fragmentation — TVK **108** seats, **163** flips (raw labels), avg margin **7.7%** vs **11.8%** in 2021; **61** seats winner &lt;35% vote share.
+- **Pick 3 questions:** Q6 margins + Q2 flips + Q3 TVK vote share; optional Q1 regional slide.
+- **Party normalization required** before flip/seat counts (2026 has long party strings, many IND).
+
+## Metric defaults
+- Valid votes = sum votes excluding NOTA.
+- Winner = max votes among non-NOTA.
+- Margin% = (winner − runner_up) / valid_votes × 100.
+- Document all definitions in `docs/METRIC_DEFINITIONS.md`.
+
+## Advanced electoral-science layer (live in this build)
+- `src/advanced_metrics.py` computes ENP (Laakso–Taagepera), Pedersen volatility, Gallagher LSq, swing, anti-incumbency, representation gap, race competitiveness, district full-flips.
+- Served via `/api/advanced/*` endpoints; visualized on `/deep` page; covered by deck slides 14–16.
+- All indices are **descriptive** — no causal claim. See METRIC_DEFINITIONS for citations.
+
+## When implementing
+- Follow phases in `HACKATHON_EXECUTION_PLAN.md`.
+- Do not expand scope beyond hackathon deliverables unless user asks.
+- Match existing repo structure once created; write neutral chart titles.
+- New analytic dimensions must (a) be ECI-derived, (b) compute deterministically from `data/processed/*`, (c) ship a glossary entry, (d) stay descriptive.

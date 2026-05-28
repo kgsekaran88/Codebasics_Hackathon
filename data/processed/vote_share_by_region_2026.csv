@@ -1,0 +1,43 @@
+region,party_norm,vote_share_pct
+Central,TVK,31.13
+Central,AIADMK,27.15
+Central,DMK,23.26
+Central,PMK,5.58
+Central,VCK,3.32
+Central,NTK,2.92
+Central,Other,6.65
+Chennai Metro,TVK,46.86
+Chennai Metro,DMK,24.43
+Chennai Metro,AIADMK,16.06
+Chennai Metro,NTK,3.55
+Chennai Metro,INC,2.76
+Chennai Metro,DMDK,1.9
+Chennai Metro,Other,4.43
+Delta,TVK,33.0
+Delta,DMK,27.77
+Delta,AIADMK,19.73
+Delta,NTK,4.56
+Delta,BJP,3.47
+Delta,INC,2.8
+Delta,Other,8.69
+Kongu,TVK,34.66
+Kongu,DMK,25.75
+Kongu,AIADMK,24.02
+Kongu,BJP,4.31
+Kongu,INC,3.57
+Kongu,NTK,3.51
+Kongu,Other,4.19
+North,TVK,33.2
+North,AIADMK,25.06
+North,DMK,20.58
+North,PMK,5.48
+North,INC,2.88
+North,NTK,2.68
+North,Other,10.11
+South,TVK,33.64
+South,DMK,24.73
+South,AIADMK,17.87
+South,NTK,6.03
+South,INC,5.95
+South,BJP,5.72
+South,Other,6.05

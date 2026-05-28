@@ -1,0 +1,235 @@
+ac_number,constituency,region,nota_votes,nota_pct
+108,Udhagamandalam,Kongu,1525,1.03
+107,Bhavanisagar,Kongu,1804,0.84
+56,Thalli,North,1550,0.75
+128,Oddanchatram,South,1491,0.74
+26,Velachery,Chennai Metro,1336,0.72
+199,Periyakulam,South,1506,0.71
+54,Veppanahalli,North,1570,0.71
+104,Bhavani,Kongu,1409,0.68
+178,Gandharvakottai,Delta,1127,0.67
+112,Avanashi,Kongu,1563,0.67
+24,Thiyagarayanagar,Chennai Metro,878,0.66
+174,Thanjavur,Delta,1274,0.64
+122,Kinathukadavu,Kongu,1717,0.64
+20,Thousand Lights,Chennai Metro,815,0.62
+121,Singanallur,Kongu,1346,0.61
+22,Virugampakkam,Chennai Metro,1030,0.6
+18,Harbour,Chennai Metro,600,0.6
+21,Anna Nagar,Chennai Metro,963,0.59
+145,Musiri,Delta,1093,0.58
+93,Senthamangalam,Central,1211,0.58
+23,Saidapet,Chennai Metro,924,0.58
+109,Gudalur,Kongu,871,0.58
+55,Hosur,North,1614,0.58
+117,Kavundampalayam,Kongu,2116,0.58
+16,Egmore,Chennai Metro,695,0.58
+206,Virudhunagar,South,954,0.57
+57,Palacodu,North,1292,0.57
+8,Ambattur,Chennai Metro,1490,0.57
+89,Salem (North),Central,1205,0.57
+99,Erode (West),Kongu,1257,0.57
+125,Udumalaipettai,Kongu,1149,0.56
+140,Tiruchirappalli (West),Delta,1098,0.56
+30,Pallavaram,Chennai Metro,1602,0.56
+41,Ranipet,North,1209,0.55
+225,Ambasamudram,South,1060,0.55
+31,Tambaram,Chennai Metro,1512,0.54
+98,Erode (East),Kongu,879,0.54
+84,Omalur,Central,1433,0.53
+101,Dharapuram,Kongu,1058,0.53
+181,Thirumayam,Delta,945,0.52
+86,Edappadi,Central,1341,0.52
+69,Vandavasi,North,988,0.52
+25,Mylapore,Chennai Metro,770,0.51
+110,Coonoor,Kongu,720,0.51
+44,Anaikattu,North,1103,0.51
+45,Kilvaithinankuppam,North,972,0.51
+5,Poonamallee,Chennai Metro,1571,0.51
+3,Tiruttani,Chennai Metro,1210,0.51
+7,Maduravoyal,Chennai Metro,1462,0.5
+4,Thiruvallur,Chennai Metro,1132,0.5
+53,Krishnagiri,North,1136,0.49
+116,Sulur,Kongu,1353,0.49
+205,Sivakasi,South,948,0.49
+14,Villivakkam,Chennai Metro,695,0.49
+82,Attur,Central,1031,0.49
+83,Yercaud,Central,1250,0.49
+36,Uthiramerur,North,1114,0.49
+38,Arakkonam,North,899,0.49
+186,Sivaganga,South,1053,0.49
+126,Madathukulam,Kongu,911,0.48
+33,Thiruporur,North,1248,0.48
+13,Kolathur,Chennai Metro,892,0.48
+120,Coimbatore (South),Kongu,759,0.48
+100,Modakkurichi,Kongu,925,0.48
+28,Alandur,Chennai Metro,1263,0.48
+233,Vilavancode,South,828,0.47
+155,Cuddalore,Central,894,0.47
+191,Madurai North,South,753,0.47
+123,Pollachi,Kongu,849,0.47
+115,Palladam,Kongu,1417,0.47
+226,Palayamkottai,South,851,0.47
+198,Andipatti,South,1028,0.47
+147,Perambalur,Central,1160,0.46
+153,Neyveli,Central,768,0.46
+62,Chengam,North,1114,0.46
+27,Shozhinganallur,Chennai Metro,2079,0.46
+19,Chepauk-Thiruvallikeni,Chennai Metro,643,0.46
+171,Kumbakonam,Delta,960,0.46
+124,Valparai,Kongu,675,0.45
+88,Salem (West),Central,1052,0.45
+118,Coimbatore (North),Kongu,1020,0.45
+203,Srivilliputhur,South,873,0.45
+195,Thiruparankundram,South,1148,0.45
+217,Ottapidaram,South,879,0.45
+193,Madurai Central,South,656,0.44
+37,Kancheepuram,North,1078,0.44
+6,Avadi,Chennai Metro,1533,0.44
+223,Alangulam,South,982,0.44
+192,Madurai South,South,612,0.43
+51,Uthangarai,North,881,0.43
+154,Panruti,Central,907,0.43
+189,Madurai East,South,1177,0.43
+68,Cheyyar,North,950,0.43
+173,Thiruvaiyaru,Delta,948,0.43
+32,Chengalpattu,Chennai Metro,1395,0.43
+92,Rasipuram,Central,863,0.42
+214,Thoothukkudi,South,853,0.42
+158,Chidambaram,Central,816,0.42
+200,Bodinayakanur,South,931,0.42
+166,Thiruthuraipoondi,Delta,797,0.42
+34,Cheyyur,North,783,0.42
+105,Anthiyur,Kongu,754,0.41
+106,Gobichettipalayam,Kongu,907,0.41
+113,Tiruppur (North),Kongu,1078,0.41
+202,Rajapalayam,South,753,0.41
+194,Madurai West,South,893,0.41
+187,Manamadurai,South,846,0.41
+211,Ramanathapuram,South,953,0.4
+176,Pattukkottai,Delta,738,0.4
+169,Nannilam,Delta,936,0.4
+196,Thirumangalam,South,933,0.4
+1,Gummidipoondi,Chennai Metro,937,0.4
+35,Madurantakam,North,797,0.4
+103,Perundurai,Kongu,812,0.4
+43,Vellore,North,757,0.4
+177,Peravurani,Delta,695,0.39
+10,Thiruvottiyur,Chennai Metro,805,0.39
+77,Ulundurpettai,Central,1051,0.39
+215,Tiruchendur,South,722,0.39
+59,Dharmapuri,North,941,0.39
+207,Aruppukkottai,South,692,0.39
+138,Manapparai,Delta,949,0.39
+132,Dindigul,South,833,0.39
+9,Madavaram,Chennai Metro,1394,0.39
+119,Thondamuthur,Kongu,1000,0.39
+146,Thuraiyur,Delta,697,0.38
+2,Ponneri,Chennai Metro,865,0.38
+66,Polur,North,798,0.38
+168,Thiruvarur,Delta,825,0.38
+213,Vilathikulam,South,642,0.37
+209,Paramakudi,South,710,0.37
+15,Thiru-Vi-Ka-Nagar,Chennai Metro,527,0.37
+81,Gangavalli,Central,731,0.37
+40,Katpadi,North,745,0.37
+182,Alangudi,Delta,673,0.37
+152,Vriddhachalam,Central,755,0.36
+164,Kilvelur,Delta,545,0.36
+61,Harur,North,782,0.36
+63,Tiruvannamalai,North,785,0.36
+72,Tindivanam,Central,714,0.36
+170,Thiruvidaimarudur,Delta,747,0.36
+114,Tiruppur (South),Kongu,644,0.36
+17,Royapuram,Chennai Metro,459,0.36
+139,Srirangam,Delta,929,0.36
+127,Palani,South,750,0.36
+94,Namakkal,Central,760,0.36
+90,Salem (South),Central,745,0.36
+165,Vedaranyam,Delta,563,0.35
+80,Kallakurichi,Central,883,0.35
+29,Sriperumbudur,Chennai Metro,1161,0.35
+102,Kangayam,Kongu,706,0.35
+142,Thiruverumbur,Delta,745,0.35
+185,Tiruppattur,South,747,0.35
+134,Aravakurichi,Kongu,637,0.35
+46,Gudiyattam,North,799,0.35
+129,Athoor,South,812,0.34
+227,Nanguneri,South,721,0.34
+111,Mettuppalayam,Kongu,839,0.34
+229,Kanniyakumari,South,825,0.34
+85,Mettur,Central,794,0.34
+172,Papanasam,Delta,716,0.34
+220,Vasudevanallur,South,637,0.34
+232,Padmanabhapuram,South,615,0.34
+216,Srivaikuntam,South,579,0.33
+157,Bhuvanagiri,Central,681,0.33
+224,Tirunelveli,South,717,0.33
+151,Tittakudi,Central,584,0.33
+49,Jolarpet,North,695,0.33
+163,Nagapattinam,Delta,479,0.32
+201,Cumbum,South,667,0.32
+130,Nilakkottai,South,642,0.32
+183,Aranthangi,Delta,580,0.32
+97,Kumarapalayam,Central,665,0.32
+175,Orathanadu,Delta,631,0.32
+197,Usilampatti,South,692,0.31
+11,Dr.Radhakrishnan Nagar,Chennai Metro,561,0.31
+218,Kovilpatti,South,593,0.31
+67,Arani,North,707,0.31
+190,Sholavandan,South,571,0.3
+58,Pennagaram,North,674,0.29
+137,Kulithalai,Kongu,612,0.29
+52,Bargur,North,631,0.29
+47,Vaniyambadi,North,624,0.29
+60,Pappireddipatti,North,677,0.29
+188,Melur,South,554,0.29
+156,Kurinjipadi,Central,629,0.29
+222,Tenkasi,South,673,0.29
+42,Arcot,North,656,0.29
+12,Perambur,Chennai Metro,601,0.29
+144,Manachanallur,Delta,599,0.29
+231,Colachal,South,581,0.29
+87,Sankari,Central,711,0.29
+219,Sankarankovil,South,560,0.29
+141,Tiruchirappalli (East),Delta,514,0.28
+160,Sirkazhi,Delta,555,0.28
+234,Killiyoor,South,502,0.28
+136,Krishnarayapuram,Kongu,525,0.28
+162,Poompuhar,Delta,586,0.27
+74,Viluppuram,Central,573,0.27
+73,Vanur,Central,519,0.27
+96,Tiruchengodu,Central,520,0.27
+149,Ariyalur,Central,641,0.27
+180,Pudukkottai,Delta,467,0.25
+135,Karur,Kongu,539,0.25
+131,Natham,South,596,0.25
+91,Veerapandi,Central,594,0.25
+159,Kattumannarkoil,Central,465,0.25
+161,Mayiladuthurai,Delta,474,0.25
+48,Ambur,North,468,0.24
+221,Kadayanallur,South,527,0.24
+204,Sattur,South,476,0.24
+39,Sholingur,North,572,0.24
+95,Paramathi-Velur,Central,449,0.24
+228,Radhapuram,South,469,0.23
+70,Gingee,Central,508,0.23
+184,Karaikudi,South,519,0.23
+50,Tiruppattur,North,464,0.23
+76,Tirukkoyilur,Central,500,0.23
+208,Tiruchuli,South,425,0.23
+230,Nagercoil,South,447,0.23
+78,Rishivandiyam,Central,534,0.22
+148,Kunnam,Central,484,0.21
+167,Mannargudi,Delta,405,0.21
+143,Lalgudi,Delta,390,0.21
+133,Vedasandur,South,474,0.21
+65,Kalasapakkam,North,423,0.2
+64,Kilpennathur,North,440,0.2
+75,Vikravandi,Central,401,0.19
+212,Mudhukulathur,South,429,0.19
+179,Viralimalai,Delta,375,0.18
+150,Jayankondam,Central,416,0.18
+79,Sankarapuram,Central,383,0.16
+210,Tiruvadanai,South,354,0.16
+71,Mailam,Central,299,0.16

@@ -1,0 +1,46 @@
+region,party_norm,share_2021,share_2026,swing_pp
+Central,AIADMK,35.83,27.15,-8.68
+Central,BJP,1.36,0.68,-0.68
+Central,DMK,39.18,23.26,-15.92
+Central,INC,2.99,1.21,-1.78
+Central,NTK,4.97,2.92,-2.05
+Central,PMK,8.12,5.58,-2.54
+Central,TVK,0.0,31.13,31.13
+Central,VCK,1.88,3.32,1.44
+Chennai Metro,AIADMK,28.59,16.06,-12.53
+Chennai Metro,BJP,1.1,1.02,-0.08
+Chennai Metro,DMK,45.74,24.43,-21.31
+Chennai Metro,INC,4.28,2.76,-1.52
+Chennai Metro,NTK,8.55,3.55,-5.0
+Chennai Metro,PMK,2.38,0.63,-1.75
+Chennai Metro,TVK,0.0,46.86,46.86
+Delta,AIADMK,33.78,19.73,-14.05
+Delta,BJP,0.81,3.47,2.66
+Delta,DMK,40.87,27.77,-13.1
+Delta,INC,2.54,2.8,0.26
+Delta,NTK,7.52,4.56,-2.96
+Delta,PMK,1.99,1.38,-0.61
+Delta,TVK,0.0,33.0,33.0
+Delta,VCK,1.08,0.0,-1.08
+Kongu,AIADMK,39.88,24.02,-15.86
+Kongu,BJP,5.43,4.31,-1.12
+Kongu,DMK,34.66,25.75,-8.91
+Kongu,INC,3.89,3.57,-0.32
+Kongu,NTK,5.4,3.51,-1.89
+Kongu,TVK,0.0,34.66,34.66
+North,AIADMK,32.01,25.06,-6.95
+North,BJP,1.45,1.73,0.28
+North,DMK,37.15,20.58,-16.57
+North,INC,2.44,2.88,0.44
+North,NTK,5.31,2.68,-2.63
+North,PMK,10.41,5.48,-4.93
+North,TVK,0.0,33.2,33.2
+North,VCK,3.16,2.22,-0.94
+South,AIADMK,32.03,17.87,-14.16
+South,BJP,4.72,5.72,1.0
+South,DMK,33.41,24.73,-8.68
+South,INC,7.78,5.95,-1.83
+South,NTK,7.86,6.03,-1.83
+South,PMK,0.27,0.0,-0.27
+South,TVK,0.0,33.64,33.64
+South,VCK,0.0,0.56,0.56
