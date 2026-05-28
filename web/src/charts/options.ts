@@ -17,29 +17,31 @@ const tooltipBase = {
 
 export function seatTallyOption(
   rows: { party: string; seats: number }[],
-  title: string
+  _title: string
 ): EChartsOption {
   const sorted = [...rows].sort((a, b) => b.seats - a.seats).slice(0, 12);
   return {
     backgroundColor: "transparent",
-    title: { text: title, left: 0, textStyle: { color: "#8b9bb4", fontSize: 12 } },
-    grid: { ...chartGrid.barHorizontal, left: 12, top: 36, right: 40 },
-    xAxis: { type: "value", ...axisStyle },
+    grid: { left: 8, right: 48, top: 8, bottom: 16, containLabel: true },
+    xAxis: { type: "value", ...axisStyle, axisLabel: { ...axisStyle.axisLabel, fontSize: 10 } },
     yAxis: {
       type: "category",
       data: sorted.map((r) => r.party).reverse(),
-      ...axisStyle,
+      axisLine: axisStyle.axisLine,
+      axisTick: { show: false },
+      axisLabel: { color: "#e8edf5", fontSize: 11, margin: 6 },
     },
     series: [
       {
         type: "bar",
+        barMaxWidth: 18,
         data: sorted
           .map((r) => ({
             value: r.seats,
-            itemStyle: { color: partyColor(r.party), borderRadius: [0, 4, 4, 0] },
+            itemStyle: { color: partyColor(r.party), borderRadius: [0, 3, 3, 0] },
           }))
           .reverse(),
-        label: { show: true, position: "right", color: "#e8edf5", fontSize: 11 },
+        label: { show: true, position: "right", color: "#e8edf5", fontSize: 11, distance: 5 },
       },
     ],
     tooltip: { trigger: "axis", axisPointer: { type: "shadow" }, ...tooltipBase },
@@ -49,45 +51,53 @@ export function seatTallyOption(
 /** Horizontal bar — better than pie for comparing many party shares (RSS / 538). */
 export function voteShareBarOption(
   rows: { party: string; vote_share_pct: number }[],
-  title: string
+  _title: string
 ): EChartsOption {
   const top = [...rows].sort((a, b) => b.vote_share_pct - a.vote_share_pct).slice(0, 8);
   return {
     backgroundColor: "transparent",
-    title: { text: title, left: 0, textStyle: { color: "#8b9bb4", fontSize: 11 } },
-    grid: { ...chartGrid.barHorizontalLabeled, top: 28, bottom: 16 },
+    grid: { left: 8, right: 56, top: 8, bottom: 18, containLabel: true },
     xAxis: {
       type: "value",
       max: 45,
       ...axisStyle,
-      axisLabel: { ...axisStyle.axisLabel, formatter: "{value}%" },
+      axisLabel: { ...axisStyle.axisLabel, fontSize: 10, formatter: "{value}%" },
     },
     yAxis: {
       type: "category",
       data: top.map((r) => r.party).reverse(),
-      ...axisStyle,
+      axisLine: axisStyle.axisLine,
+      axisTick: { show: false },
+      axisLabel: { color: "#e8edf5", fontSize: 11, margin: 6 },
     },
     series: [
       {
         type: "bar",
+        barMaxWidth: 18,
         data: top
           .map((r) => ({
             value: Math.round(r.vote_share_pct * 10) / 10,
             itemStyle: { color: partyColor(r.party), borderRadius: [0, 3, 3, 0] },
           }))
           .reverse(),
-        label: { show: true, position: "right", formatter: "{c}%", color: "#e8edf5", fontSize: 10 },
+        label: {
+          show: true,
+          position: "right",
+          formatter: "{c}%",
+          color: "#e8edf5",
+          fontSize: 11,
+          distance: 5,
+        },
       },
     ],
     tooltip: {
       trigger: "axis",
+      ...tooltipBase,
       formatter: (p: unknown) => {
         const params = Array.isArray(p) ? p[0] : p;
         const d = params as { name: string; value: number };
-        return `${d.name}: ${d.value}% vote share`;
+        return `<strong>${d.name}</strong>: ${d.value}% vote share`;
       },
-      backgroundColor: "#141a24",
-      borderColor: "#2a3548",
     },
   };
 }
@@ -349,7 +359,9 @@ export function districtMapOption(
   };
 }
 
-/** Horizontal stacked bars — readable for 6 macro-regions on dashboard panels. */
+/** Vertical stacked bars — readable for 6 macro-regions in compact dashboard panels.
+ *  Regions on X-axis; bar segments stacked by party; total seats shown above each column.
+ *  Avoids horizontal-stack label overlap when panels are short. */
 export function regionalStackOption(
   data: { region: string; party: string; seats: number }[]
 ): EChartsOption {
@@ -361,23 +373,39 @@ export function regionalStackOption(
     .map(([p]) => p)
     .slice(0, 7);
 
+  const regionTotals = regions.map((region) =>
+    parties.reduce((sum, p) => {
+      const row = data.find((d) => d.region === region && d.party === p);
+      return sum + (row?.seats ?? 0);
+    }, 0)
+  );
+  const maxTotal = Math.max(1, ...regionTotals);
+  const lastParty = parties[parties.length - 1];
+
   return {
     backgroundColor: "transparent",
-    grid: { ...chartGrid.stackHorizontal, top: 36, right: 32, bottom: 24 },
+    grid: { left: 8, right: 12, top: 56, bottom: 28, containLabel: true },
     xAxis: {
-      type: "value",
-      name: "Seats",
-      nameLocation: "middle",
-      nameGap: 22,
-      nameTextStyle: { color: "#8b9bb4", fontSize: 11 },
-      ...axisStyle,
-      axisLabel: { ...axisStyle.axisLabel, fontSize: 10 },
-    },
-    yAxis: {
       type: "category",
       data: regions.map((r) => REGION_SHORT[r] ?? r),
-      axisLabel: { color: "#e8edf5", fontSize: 11, margin: 8 },
       axisLine: axisStyle.axisLine,
+      axisTick: { show: false },
+      axisLabel: {
+        color: "#e8edf5",
+        fontSize: 11,
+        interval: 0,
+        margin: 8,
+      },
+    },
+    yAxis: {
+      type: "value",
+      name: "Seats",
+      nameLocation: "end",
+      nameGap: 8,
+      nameTextStyle: { color: "#8b9bb4", fontSize: 10 },
+      max: Math.ceil((maxTotal * 1.12) / 5) * 5,
+      ...axisStyle,
+      axisLabel: { ...axisStyle.axisLabel, fontSize: 10 },
     },
     tooltip: {
       trigger: "axis",
@@ -388,45 +416,75 @@ export function regionalStackOption(
         if (!items.length) return "";
         const idx = (items[0] as { dataIndex: number }).dataIndex;
         const region = regions[idx];
+        const total = regionTotals[idx];
         const lines = items
           .filter((it) => Number((it as { value: number }).value) > 0)
+          .sort(
+            (a, b) =>
+              Number((b as { value: number }).value) -
+              Number((a as { value: number }).value)
+          )
           .map(
             (it) =>
-              `${(it as { seriesName: string }).seriesName}: ${(it as { value: number }).value}`
+              `<span style="display:inline-block;width:8px;height:8px;border-radius:2px;background:${(it as { color: string }).color};margin-right:6px"></span>${(it as { seriesName: string }).seriesName}: <strong>${(it as { value: number }).value}</strong>`
           );
-        return `<strong>${region}</strong><br/>${lines.join("<br/>")}`;
+        return `<strong>${region}</strong> · ${total} seats<br/>${lines.join("<br/>")}`;
       },
     },
     legend: {
-      top: 2,
+      top: 6,
       left: "center",
       textStyle: { color: "#8b9bb4", fontSize: 10 },
       itemWidth: 10,
       itemHeight: 7,
-      itemGap: 8,
-      selectedMode: true,
+      itemGap: 10,
+      icon: "roundRect",
     },
     series: parties.map((party) => ({
       name: party,
       type: "bar",
       stack: "total",
-      barMaxWidth: 28,
+      barMaxWidth: 42,
       emphasis: { focus: "series" },
       data: regions.map((region) => {
         const row = data.find((d) => d.region === region && d.party === party);
         return row?.seats ?? 0;
       }),
-      itemStyle: { color: partyColor(party), borderRadius: [0, 2, 2, 0] },
+      itemStyle: { color: partyColor(party) },
+      // Inline labels only on segments ≥5 seats — avoids overlap on thin segments
       label: {
         show: true,
         formatter: (p) => {
           const v = Number((p as { value: number }).value);
-          return v >= 3 ? String(v) : "";
+          return v >= 5 ? String(v) : "";
         },
         color: "#0c0f14",
-        fontSize: 11,
+        fontSize: 10,
         fontWeight: 600,
       },
+      // The topmost (last) series carries the total-on-top label via markPoint
+      ...(party === lastParty
+        ? {
+            markPoint: {
+              symbol: "rect",
+              symbolSize: [1, 1],
+              itemStyle: { color: "transparent" },
+              label: {
+                show: true,
+                position: "top",
+                color: "#e8edf5",
+                fontSize: 11,
+                fontWeight: 700,
+                offset: [0, -6],
+                formatter: "{b}",
+              },
+              data: regions.map((_, i) => ({
+                name: String(regionTotals[i]),
+                coord: [i, regionTotals[i]],
+              })),
+            },
+          }
+        : {}),
     })),
   };
 }
@@ -447,27 +505,37 @@ export function flipBarOption(
   return {
     backgroundColor: "transparent",
     grid: {
-      ...chartGrid.barHorizontalLongRight,
-      right: isRegion ? 128 : 96,
+      left: 8,
+      right: isRegion ? 120 : 96,
+      top: 12,
+      bottom: 28,
+      containLabel: true,
     },
     xAxis: {
       type: "value",
       max: 100,
-      axisLabel: { formatter: "{value}%", fontSize: 11, color: "#8b9bb4" },
+      axisLabel: { formatter: "{value}%", fontSize: 10, color: "#8b9bb4" },
       splitLine: axisStyle.splitLine,
       axisLine: axisStyle.axisLine,
     },
     yAxis: {
       type: "category",
       data: labels,
-      axisLabel: { color: "#e8edf5", fontSize: isRegion ? 13 : 11, margin: 12 },
+      axisLabel: {
+        color: "#e8edf5",
+        fontSize: isRegion ? 11 : 11,
+        margin: 8,
+        interval: 0,
+      },
+      axisTick: { show: false },
       axisLine: axisStyle.axisLine,
     },
     tooltip: { trigger: "axis", axisPointer: { type: "shadow" }, ...tooltipBase },
     series: [
       {
         type: "bar",
-        barMaxWidth: isRegion ? 32 : 22,
+        barMaxWidth: isRegion ? 18 : 22,
+        barCategoryGap: "32%",
         data: ordered.map((r) => {
           const name = (isRegion ? r.region : r.reserved) ?? "";
           const color = isRegion
@@ -475,19 +543,20 @@ export function flipBarOption(
             : "#e8b84a";
           return {
             value: r.flip_pct,
-            itemStyle: { color, borderRadius: [0, 4, 4, 0] },
+            itemStyle: { color, borderRadius: [0, 3, 3, 0] },
           };
         }),
         label: {
           show: true,
           position: "right",
+          distance: 6,
           formatter: (p) => {
             const idx = (p as { dataIndex: number }).dataIndex;
             const row = ordered[idx];
             return `${row.flips} flips · ${row.flip_pct}%`;
           },
           color: "#e8edf5",
-          fontSize: 12,
+          fontSize: 11,
         },
       },
     ],
@@ -534,26 +603,48 @@ export function retentionOption(
 }
 
 export function bucketOption(rows: { bucket: string; count: number }[]): EChartsOption {
+  const maxV = Math.max(1, ...rows.map((r) => r.count));
   return {
     backgroundColor: "transparent",
-    grid: chartGrid.barVerticalTopLabel,
+    grid: { left: 8, right: 16, top: 28, bottom: 28, containLabel: true },
     xAxis: {
       type: "category",
       data: rows.map((r) => r.bucket),
-      axisLabel: { color: "#8b9bb4", fontSize: 11 },
       axisLine: axisStyle.axisLine,
+      axisTick: { show: false },
+      axisLabel: { color: "#e8edf5", fontSize: 11, interval: 0, margin: 8 },
     },
-    yAxis: { type: "value", ...axisStyle },
+    yAxis: {
+      type: "value",
+      max: Math.ceil((maxV * 1.15) / 10) * 10,
+      ...axisStyle,
+      axisLabel: { ...axisStyle.axisLabel, fontSize: 10 },
+    },
     series: [
       {
         type: "bar",
-        barMaxWidth: 48,
-        data: rows.map((r) => r.count),
-        itemStyle: { color: "#64B5F6", borderRadius: [4, 4, 0, 0] },
-        label: { show: true, position: "top", color: "#e8edf5", fontSize: 11 },
+        barMaxWidth: 56,
+        data: rows.map((r, i) => ({
+          value: r.count,
+          itemStyle: {
+            color: ["#64B5F6", "#E69F00", "#16a34a"][i % 3],
+            borderRadius: [4, 4, 0, 0],
+          },
+        })),
+        label: { show: true, position: "top", color: "#e8edf5", fontSize: 12, fontWeight: 600 },
       },
     ],
-    tooltip: { trigger: "axis", axisPointer: { type: "shadow" }, ...tooltipBase },
+    tooltip: {
+      trigger: "axis",
+      axisPointer: { type: "shadow" },
+      ...tooltipBase,
+      formatter: (raw) => {
+        const items = Array.isArray(raw) ? raw : [raw];
+        const p = items[0] as { name: string; value: number };
+        const pct = Math.round((p.value / 234) * 100);
+        return `<strong>${p.name}</strong> margin<br/>${p.value} ACs · ${pct}% of 234`;
+      },
+    },
   };
 }
 
@@ -902,7 +993,7 @@ export function raceTypeOption(rows: { race_type: string; count: number }[]): EC
 
 export function regionalVoteShareOption(
   rows: { region: string; party: string; vote_share_pct: number }[],
-  year: string
+  _year: string
 ): EChartsOption {
   const regions = REGION_ORDER.filter((r) => rows.some((x) => x.region === r));
   const parties = Array.from(new Set(rows.map((r) => r.party))).filter((p) => p !== "Other");
@@ -914,25 +1005,62 @@ export function regionalVoteShareOption(
   const stackKeys = [...parties.slice(0, 6), "Other"];
   return {
     backgroundColor: "transparent",
-    title: { text: `Vote share by region — ${year}`, left: 0, textStyle: { color: "#8b9bb4", fontSize: 11 } },
-    grid: { ...chartGrid.barHorizontal, top: 56, left: 12, right: 12, bottom: 20 },
-    legend: { top: 26, textStyle: { color: "#8b9bb4", fontSize: 10 }, itemHeight: 8, itemWidth: 14 },
+    grid: { left: 8, right: 16, top: 32, bottom: 28, containLabel: true },
+    legend: {
+      top: 4,
+      left: "center",
+      textStyle: { color: "#8b9bb4", fontSize: 10 },
+      itemHeight: 7,
+      itemWidth: 10,
+      itemGap: 10,
+      icon: "roundRect",
+    },
     xAxis: {
       type: "category",
       data: regions.map((r) => REGION_SHORT[r] ?? r),
-      ...axisStyle,
+      axisLine: axisStyle.axisLine,
+      axisTick: { show: false },
+      axisLabel: { color: "#e8edf5", fontSize: 11, interval: 0, margin: 8 },
     },
-    yAxis: { type: "value", max: 100, ...axisStyle, axisLabel: { formatter: "{value}%" } },
-    tooltip: { trigger: "axis", axisPointer: { type: "shadow" }, ...tooltipBase },
+    yAxis: {
+      type: "value",
+      max: 100,
+      ...axisStyle,
+      axisLabel: { ...axisStyle.axisLabel, fontSize: 10, formatter: "{value}%" },
+    },
+    tooltip: {
+      trigger: "axis",
+      axisPointer: { type: "shadow" },
+      ...tooltipBase,
+      formatter: (raw) => {
+        const items = Array.isArray(raw) ? raw : [raw];
+        if (!items.length) return "";
+        const idx = (items[0] as { dataIndex: number }).dataIndex;
+        const region = regions[idx];
+        const lines = items
+          .filter((it) => Number((it as { value: number }).value) > 0)
+          .sort(
+            (a, b) =>
+              Number((b as { value: number }).value) -
+              Number((a as { value: number }).value)
+          )
+          .map(
+            (it) =>
+              `<span style="display:inline-block;width:8px;height:8px;border-radius:2px;background:${(it as { color: string }).color};margin-right:6px"></span>${(it as { seriesName: string }).seriesName}: <strong>${Number((it as { value: number }).value).toFixed(1)}%</strong>`
+          );
+        return `<strong>${region}</strong><br/>${lines.join("<br/>")}`;
+      },
+    },
     series: stackKeys.map((party) => ({
       name: party,
       type: "bar",
       stack: "total",
-      barMaxWidth: 36,
+      barMaxWidth: 48,
       itemStyle: { color: partyColor(party) },
+      emphasis: { focus: "series" },
       data: regions.map((region) => {
         const row = rows.find((r) => r.region === region && r.party === party);
-        return row ? row.vote_share_pct : 0;
+        return row ? Math.round(row.vote_share_pct * 10) / 10 : 0;
       }),
     })),
   };

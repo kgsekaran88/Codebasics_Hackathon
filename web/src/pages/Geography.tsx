@@ -82,7 +82,7 @@ export default function Geography() {
         </p>
       )}
 
-      <ChartViewport className="grid grid-rows-[minmax(0,1.4fr)_minmax(0,0.85fr)] gap-3">
+      <ChartViewport className="grid grid-rows-[minmax(0,1.55fr)_minmax(0,1fr)] gap-3">
       <div className={pageChartGridSplit}>
         <Panel
           title="Tamil Nadu — district map"
@@ -110,7 +110,7 @@ export default function Geography() {
         <div className={chartStack}>
           <ChartPanel
             title={`Seats by macro-region — ${year}`}
-            subtitle="Party seat count per region · click legend to hide parties"
+            subtitle="Party seat count per region · totals above each bar · click legend to hide parties"
             height="fill"
             testId="regional-seats-chart"
           >
