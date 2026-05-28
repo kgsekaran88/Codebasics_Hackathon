@@ -1,26 +1,37 @@
+import { useState } from "react";
 import { api } from "../lib/api";
 import { useApi } from "../hooks/useApi";
 import { usePageInsights } from "../hooks/usePageInsights";
 import DashboardShell, { ChartViewport, Panel } from "../components/DashboardShell";
-import ChartPanel from "../components/ChartPanel";
+import FixedChartPanel from "../components/FixedChartPanel";
+import DotSizeControl from "../components/DotSizeControl";
 import InsightPanel from "../components/InsightPanel";
 import StoryFocusBanner from "../components/StoryFocusBanner";
 import EChart from "../components/EChart";
 import { marginBeeswarmOption, bucketOption } from "../charts/options";
-import {
-  chartArea,
-  chartStack,
-  pageChartGridSplit,
-  panelBody,
-  panelHeightLg,
-  tableScroll,
-} from "../lib/panelLayout";
+import { panelBody, tableScroll } from "../lib/panelLayout";
+
+const H = {
+  scatter: 440,
+  buckets: 300,
+  table: 300,
+} as const;
 
 export default function Margins() {
+  const [dotSize, setDotSize] = useState(14);
   const { bullets } = usePageInsights("margins");
   const { data: comparison } = useApi(() => api.comparison(new URLSearchParams()), []);
   const { data: buckets } = useApi(() => api.winnerBuckets(), []);
   const { data: closest } = useApi(() => api.closestRaces(), []);
+
+  const scatterRows =
+    comparison?.map((r) => ({
+      margin_pct_2021: r.margin_pct_2021,
+      margin_pct_2026: r.margin_pct_2026,
+      region: r.region,
+      ac_number: r.ac_number,
+      ac_name: r.ac_name,
+    })) ?? [];
 
   return (
     <DashboardShell
@@ -30,38 +41,36 @@ export default function Margins() {
       <StoryFocusBanner focus="margins" />
       {bullets.length > 0 && <InsightPanel bullets={bullets} />}
 
-      <ChartViewport className={pageChartGridSplit}>
-        <Panel
+      <ChartViewport className="flex flex-col gap-3 overflow-y-auto flex-1 min-h-0 pb-2">
+        <FixedChartPanel
           title="2021 vs 2026 margin"
-          subtitle="Each dot = one AC · hover · scroll/zoom"
-          className={`${panelHeightLg} ${panelBody}`}
+          subtitle="Each dot = one AC · drag to pan · scroll to zoom · dashed line = no change"
+          heightPx={H.scatter}
+          testId="margin-scatter-chart"
+          toolbar={<DotSizeControl value={dotSize} onChange={setDotSize} />}
         >
-          <div className={chartArea} data-testid="margin-scatter-chart">
-            {comparison && (
-              <EChart
-                option={marginBeeswarmOption(
-                  comparison.map((r) => ({
-                    margin_pct_2021: r.margin_pct_2021,
-                    margin_pct_2026: r.margin_pct_2026,
-                    region: r.region,
-                    ac_number: r.ac_number,
-                    ac_name: r.ac_name,
-                  }))
-                )}
-                height="fill"
-              />
-            )}
-          </div>
-        </Panel>
+          {scatterRows.length > 0 && (
+            <EChart
+              option={marginBeeswarmOption(scatterRows, { symbolSize: dotSize })}
+              height="fill"
+            />
+          )}
+        </FixedChartPanel>
 
-        <div className={chartStack}>
-          <ChartPanel title="Winner vote share buckets" subtitle="2026" height="fill">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 shrink-0">
+          <FixedChartPanel
+            title="Winner vote share buckets"
+            subtitle="2026 — share of valid votes for the winner"
+            heightPx={H.buckets}
+          >
             {buckets && <EChart option={bucketOption(buckets)} height="fill" />}
-          </ChartPanel>
+          </FixedChartPanel>
+
           <Panel
             title="Closest races"
             subtitle="Lowest 2026 margins"
-            className={`flex-1 min-h-0 h-full ${panelBody}`}
+            className={`${panelBody} overflow-hidden`}
+            style={{ height: H.table }}
           >
             <div className={tableScroll}>
               <table className="w-full">

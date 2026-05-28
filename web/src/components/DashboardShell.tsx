@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import type { CSSProperties, ReactNode } from "react";
 
 interface Props {
   title: string;
@@ -46,14 +46,16 @@ export function Panel({
   subtitle,
   children,
   className = "",
+  style,
 }: {
   title?: string;
   subtitle?: string;
   children: ReactNode;
   className?: string;
+  style?: CSSProperties;
 }) {
   return (
-    <section className={`panel flex flex-col min-w-0 h-full ${className}`}>
+    <section className={`panel flex flex-col min-w-0 h-full ${className}`} style={style}>
       {(title || subtitle) && (
         <header className="shrink-0 px-3 pt-2.5 pb-1.5 border-b border-[var(--color-border)]/40">
           {title && <h2 className="text-sm font-semibold text-white">{title}</h2>}

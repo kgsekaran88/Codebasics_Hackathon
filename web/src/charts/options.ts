@@ -206,30 +206,62 @@ type MarginRow = {
   ac_name?: string;
 };
 
-export function marginBeeswarmOption(rows: MarginRow[]): EChartsOption {
+function marginAxisExtent(values: number[], pad = 2): { min: number; max: number } {
+  if (!values.length) return { min: 0, max: 40 };
+  const lo = Math.min(...values);
+  const hi = Math.max(...values);
+  return {
+    min: Math.max(0, Math.floor(lo - pad)),
+    max: Math.min(55, Math.ceil(hi + pad)),
+  };
+}
+
+export type MarginScatterOpts = {
+  /** ECharts symbolSize (default 14). Use UI slider on Margins page. */
+  symbolSize?: number;
+};
+
+/** 2021 vs 2026 margin scatter — axes fit data range; optional dot size. */
+export function marginBeeswarmOption(
+  rows: MarginRow[],
+  opts: MarginScatterOpts = {}
+): EChartsOption {
+  const symbolSize = opts.symbolSize ?? 14;
   const byRegion: Record<string, MarginRow[]> = {};
   rows.forEach((r) => {
     if (!byRegion[r.region]) byRegion[r.region] = [];
     byRegion[r.region].push(r);
   });
-  const regions = Object.keys(byRegion);
+  const regions = REGION_ORDER.filter((r) => byRegion[r]);
+  const xVals = rows.map((r) => r.margin_pct_2021);
+  const yVals = rows.map((r) => r.margin_pct_2026);
+  const xExt = marginAxisExtent(xVals);
+  const yExt = marginAxisExtent(yVals);
+  const axisMax = Math.max(xExt.max, yExt.max);
+
   return {
     backgroundColor: "transparent",
-    grid: chartGrid.scatter,
-    dataZoom: [{ type: "inside", xAxisIndex: 0 }, { type: "inside", yAxisIndex: 0 }],
+    grid: { left: 52, right: 20, top: 44, bottom: 48, containLabel: false },
+    dataZoom: [
+      { type: "inside", xAxisIndex: 0 },
+      { type: "inside", yAxisIndex: 0 },
+    ],
     xAxis: {
       type: "value",
       name: "2021 margin %",
       nameLocation: "middle",
-      nameGap: 30,
+      nameGap: 28,
+      min: xExt.min,
+      max: axisMax,
       ...axisStyle,
     },
     yAxis: {
       type: "value",
       name: "2026 margin %",
       nameLocation: "middle",
-      nameGap: 36,
-      min: 0,
+      nameGap: 40,
+      min: yExt.min,
+      max: axisMax,
       ...axisStyle,
     },
     tooltip: {
@@ -243,26 +275,45 @@ export function marginBeeswarmOption(rows: MarginRow[]): EChartsOption {
         return `${title}<br/>2021 margin: ${d.margin_pct_2021?.toFixed(1)}%<br/>2026 margin: ${d.margin_pct_2026?.toFixed(1)}%`;
       },
     },
-    series: regions.map((region) => ({
-      name: REGION_SHORT[region] ?? region,
-      type: "scatter",
-      symbolSize: 8,
-      data: byRegion[region].map((r) => ({
-        value: [r.margin_pct_2021, r.margin_pct_2026],
-        margin_pct_2021: r.margin_pct_2021,
-        margin_pct_2026: r.margin_pct_2026,
-        ac_number: r.ac_number,
-        ac_name: r.ac_name,
-        region: r.region,
-      })),
-      itemStyle: { color: REGION_COLORS[region] ?? "#78909C", opacity: 0.75 },
-    })),
     legend: {
-      bottom: 0,
+      top: 4,
+      left: "center",
       textStyle: { color: "#8b9bb4", fontSize: 10 },
+      itemWidth: 10,
+      itemHeight: 8,
       type: "scroll",
       selectedMode: true,
     },
+    series: [
+      {
+        name: "No change line",
+        type: "line",
+        symbol: "none",
+        silent: true,
+        lineStyle: { color: "#4a5568", type: "dashed", width: 1 },
+        data: [
+          [xExt.min, xExt.min],
+          [axisMax, axisMax],
+        ],
+        z: 0,
+      },
+      ...regions.map((region) => ({
+        name: REGION_SHORT[region as keyof typeof REGION_SHORT] ?? region,
+        type: "scatter" as const,
+        symbolSize,
+        z: 2,
+        data: byRegion[region].map((r) => ({
+          value: [r.margin_pct_2021, r.margin_pct_2026],
+          margin_pct_2021: r.margin_pct_2021,
+          margin_pct_2026: r.margin_pct_2026,
+          ac_number: r.ac_number,
+          ac_name: r.ac_name,
+          region: r.region,
+        })),
+        itemStyle: { color: REGION_COLORS[region] ?? "#78909C", opacity: 0.82 },
+        emphasis: { scale: 1.35 },
+      })),
+    ],
   };
 }
 
@@ -384,7 +435,7 @@ export function regionalStackOption(
 
   return {
     backgroundColor: "transparent",
-    grid: { left: 8, right: 12, top: 56, bottom: 28, containLabel: true },
+    grid: { left: 44, right: 16, top: 52, bottom: 36, containLabel: false },
     xAxis: {
       type: "category",
       data: regions.map((r) => REGION_SHORT[r] ?? r),
@@ -444,7 +495,7 @@ export function regionalStackOption(
       name: party,
       type: "bar",
       stack: "total",
-      barMaxWidth: 42,
+      barWidth: "58%",
       emphasis: { focus: "series" },
       data: regions.map((region) => {
         const row = data.find((d) => d.region === region && d.party === party);
@@ -489,12 +540,73 @@ export function regionalStackOption(
   };
 }
 
+/** Vertical flip-rate bars — best for macro-regions (full-width panel). */
+export function flipBarVerticalOption(
+  rows: { region?: string; flips: number; flip_pct: number }[]
+): EChartsOption {
+  const ordered = [...rows].sort((a, b) => a.flip_pct - b.flip_pct);
+  const labels = ordered.map((r) => {
+    const name = r.region ?? "";
+    return REGION_SHORT[name as keyof typeof REGION_SHORT] ?? name;
+  });
+
+  return {
+    backgroundColor: "transparent",
+    grid: { left: 48, right: 24, top: 16, bottom: 48, containLabel: false },
+    xAxis: {
+      type: "category",
+      data: labels,
+      axisLine: axisStyle.axisLine,
+      axisTick: { show: false },
+      axisLabel: { color: "#e8edf5", fontSize: 12, interval: 0, margin: 10 },
+    },
+    yAxis: {
+      type: "value",
+      max: 100,
+      name: "Flip %",
+      nameTextStyle: { color: "#8b9bb4", fontSize: 10 },
+      nameGap: 12,
+      ...axisStyle,
+      axisLabel: { ...axisStyle.axisLabel, formatter: "{value}%", fontSize: 10 },
+    },
+    tooltip: { trigger: "axis", axisPointer: { type: "shadow" }, ...tooltipBase },
+    series: [
+      {
+        type: "bar",
+        barWidth: "52%",
+        data: ordered.map((r) => {
+          const name = r.region ?? "";
+          return {
+            value: r.flip_pct,
+            itemStyle: {
+              color: REGION_COLORS[name] ?? "#e8b84a",
+              borderRadius: [4, 4, 0, 0],
+            },
+          };
+        }),
+        label: {
+          show: true,
+          position: "top",
+          distance: 6,
+          formatter: (p) => {
+            const idx = (p as { dataIndex: number }).dataIndex;
+            const row = ordered[idx];
+            return `${row.flip_pct}%\n${row.flips} flips`;
+          },
+          color: "#e8edf5",
+          fontSize: 10,
+          lineHeight: 14,
+        },
+      },
+    ],
+  };
+}
+
 export function flipBarOption(
   rows: { region?: string; reserved?: string; flips: number; flip_pct: number; total?: number }[],
   labelKey: "region" | "reserved"
 ): EChartsOption {
   const isRegion = labelKey === "region";
-  // Ascending so highest flip % sits at top of horizontal bars
   const ordered = [...rows].sort((a, b) => a.flip_pct - b.flip_pct);
 
   const labels = ordered.map((r) => {
@@ -505,11 +617,11 @@ export function flipBarOption(
   return {
     backgroundColor: "transparent",
     grid: {
-      left: 8,
-      right: isRegion ? 120 : 96,
-      top: 12,
-      bottom: 28,
-      containLabel: true,
+      left: 72,
+      right: isRegion ? 108 : 88,
+      top: 8,
+      bottom: 16,
+      containLabel: false,
     },
     xAxis: {
       type: "value",
@@ -523,8 +635,8 @@ export function flipBarOption(
       data: labels,
       axisLabel: {
         color: "#e8edf5",
-        fontSize: isRegion ? 11 : 11,
-        margin: 8,
+        fontSize: 12,
+        margin: 10,
         interval: 0,
       },
       axisTick: { show: false },
@@ -534,8 +646,8 @@ export function flipBarOption(
     series: [
       {
         type: "bar",
-        barMaxWidth: isRegion ? 18 : 22,
-        barCategoryGap: "32%",
+        barWidth: isRegion ? 20 : 18,
+        barCategoryGap: "28%",
         data: ordered.map((r) => {
           const name = (isRegion ? r.region : r.reserved) ?? "";
           const color = isRegion
@@ -549,7 +661,7 @@ export function flipBarOption(
         label: {
           show: true,
           position: "right",
-          distance: 6,
+          distance: 8,
           formatter: (p) => {
             const idx = (p as { dataIndex: number }).dataIndex;
             const row = ordered[idx];
@@ -1005,7 +1117,7 @@ export function regionalVoteShareOption(
   const stackKeys = [...parties.slice(0, 6), "Other"];
   return {
     backgroundColor: "transparent",
-    grid: { left: 8, right: 16, top: 32, bottom: 28, containLabel: true },
+    grid: { left: 48, right: 20, top: 40, bottom: 44, containLabel: false },
     legend: {
       top: 4,
       left: "center",
@@ -1020,7 +1132,7 @@ export function regionalVoteShareOption(
       data: regions.map((r) => REGION_SHORT[r] ?? r),
       axisLine: axisStyle.axisLine,
       axisTick: { show: false },
-      axisLabel: { color: "#e8edf5", fontSize: 11, interval: 0, margin: 8 },
+      axisLabel: { color: "#e8edf5", fontSize: 12, interval: 0, margin: 10 },
     },
     yAxis: {
       type: "value",
@@ -1055,7 +1167,7 @@ export function regionalVoteShareOption(
       name: party,
       type: "bar",
       stack: "total",
-      barMaxWidth: 48,
+      barWidth: "55%",
       itemStyle: { color: partyColor(party) },
       emphasis: { focus: "series" },
       data: regions.map((region) => {

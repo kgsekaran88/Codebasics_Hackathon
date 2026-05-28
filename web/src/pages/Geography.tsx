@@ -3,8 +3,8 @@ import { api } from "../lib/api";
 import { useApi } from "../hooks/useApi";
 import { usePageInsights } from "../hooks/usePageInsights";
 import { useYear } from "../context/YearContext";
-import DashboardShell, { ChartViewport, Panel } from "../components/DashboardShell";
-import ChartPanel from "../components/ChartPanel";
+import DashboardShell, { ChartViewport } from "../components/DashboardShell";
+import FixedChartPanel from "../components/FixedChartPanel";
 import InsightPanel from "../components/InsightPanel";
 import EChart from "../components/EChart";
 import DistrictMapChart from "../components/DistrictMapChart";
@@ -12,13 +12,18 @@ import PartyLegend from "../components/PartyLegend";
 import YearToggle from "../components/YearToggle";
 import { SupplementaryBanner } from "../components/StoryFocusBanner";
 import type { DistrictMapMode } from "../charts/options";
-import { regionalStackOption, flipBarOption, regionalVoteShareOption } from "../charts/options";
 import {
-  chartStack,
-  pageChartGridSplit,
-  panelBody,
-  panelHeightLg,
-} from "../lib/panelLayout";
+  regionalStackOption,
+  flipBarVerticalOption,
+  regionalVoteShareOption,
+} from "../charts/options";
+
+/** Guaranteed chart canvas heights (px) — avoids flex collapse in side columns. */
+const H = {
+  mapRow: 460,
+  flip: 320,
+  voteShare: 360,
+} as const;
 
 export default function Geography() {
   const { year, setYear } = useYear();
@@ -82,64 +87,65 @@ export default function Geography() {
         </p>
       )}
 
-      <ChartViewport className="grid grid-rows-[minmax(0,1.55fr)_minmax(0,1fr)] gap-3">
-      <div className={pageChartGridSplit}>
-        <Panel
-          title="Tamil Nadu — district map"
-          subtitle={
-            mapMode === "party"
-              ? "Each district colored by 2026 winning party · pinch/scroll to zoom"
-              : "Darker = more seats flipped 2021→2026"
-          }
-          className={`${panelHeightLg} ${panelBody}`}
-        >
-          <div className="flex-1 min-h-0 relative w-full" data-testid="district-map">
-            <DistrictMapChart mode={mapMode} />
-          </div>
-          {mapMode === "party" ? (
-            <div className="shrink-0 pt-2 border-t border-[var(--color-border)]/40 mt-1">
-              <PartyLegend />
+      <ChartViewport className="flex flex-col gap-3 overflow-y-auto flex-1 min-h-0 pb-2">
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-3 shrink-0">
+          <FixedChartPanel
+            title="Tamil Nadu — district map"
+            subtitle={
+              mapMode === "party"
+                ? "Each district colored by 2026 winning party · pinch/scroll to zoom"
+                : "Darker = more seats flipped 2021→2026"
+            }
+            heightPx={H.mapRow}
+            testId="district-map-panel"
+          >
+            <div className="flex flex-col h-full min-h-0">
+              <div className="flex-1 min-h-0 relative w-full" data-testid="district-map">
+                <DistrictMapChart mode={mapMode} />
+              </div>
+              {mapMode === "party" ? (
+                <div className="shrink-0 pt-2 border-t border-[var(--color-border)]/40 mt-1">
+                  <PartyLegend />
+                </div>
+              ) : (
+                <p className="shrink-0 text-[10px] text-[var(--color-muted)] pt-1">
+                  Gradient = % of ACs with changed winner in district
+                </p>
+              )}
             </div>
-          ) : (
-            <p className="shrink-0 text-[10px] text-[var(--color-muted)] pt-1">
-              Gradient = % of ACs with changed winner in district
-            </p>
-          )}
-        </Panel>
+          </FixedChartPanel>
 
-        <div className={chartStack}>
-          <ChartPanel
+          <FixedChartPanel
             title={`Seats by macro-region — ${year}`}
-            subtitle="Party seat count per region · totals above each bar · click legend to hide parties"
-            height="fill"
+            subtitle="Party seat count per region · totals above each bar"
+            heightPx={H.mapRow}
             testId="regional-seats-chart"
           >
             {regionalRows.length > 0 && (
               <EChart option={regionalStackOption(regionalRows)} height="fill" />
             )}
-          </ChartPanel>
-
-          <ChartPanel
-            title="Flip rate by macro-region"
-            subtitle="% of constituencies with a different winner vs 2021"
-            height="fill"
-            testId="regional-flip-chart"
-          >
-            {flips && <EChart option={flipBarOption(flips, "region")} height="fill" />}
-          </ChartPanel>
+          </FixedChartPanel>
         </div>
-      </div>
 
-        <ChartPanel
+        <FixedChartPanel
+          title="Flip rate by macro-region"
+          subtitle="% of constituencies with a different winner vs 2021"
+          heightPx={H.flip}
+          testId="regional-flip-chart"
+        >
+          {flips && <EChart option={flipBarVerticalOption(flips)} height="fill" />}
+        </FixedChartPanel>
+
+        <FixedChartPanel
           title={`Vote share by region — ${year}`}
           subtitle="Stacked party vote share within each macro-region (Q3 by-region)"
-          height="fill"
+          heightPx={H.voteShare}
           testId="regional-vote-share-chart"
         >
           {voteRows.length > 0 && (
             <EChart option={regionalVoteShareOption(voteRows, year)} height="fill" />
           )}
-        </ChartPanel>
+        </FixedChartPanel>
       </ChartViewport>
     </DashboardShell>
   );
