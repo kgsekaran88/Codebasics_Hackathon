@@ -4,6 +4,7 @@ import { usePageInsights } from "../hooks/usePageInsights";
 import DashboardShell, { Panel } from "../components/DashboardShell";
 import EChart from "../components/EChart";
 import InsightPanel from "../components/InsightPanel";
+import ChartTakeaway from "../components/ChartTakeaway";
 import {
   enpRegionOption,
   swingHeatmapOption,
@@ -27,7 +28,7 @@ export default function DeepInsights() {
   const { data: gap } = useApi(() => api.representationGap(), []);
   const { data: races } = useApi(() => api.raceTypes(), []);
   const { data: districts } = useApi(() => api.districtFlips(), []);
-  const { bullets } = usePageInsights("deep", "2026");
+  const { bullets, chartTakeaway } = usePageInsights("deep", "2026");
 
   return (
     <DashboardShell
@@ -73,6 +74,7 @@ export default function DeepInsights() {
           title="Effective Number of Parties by region"
           subtitle="Higher = more fragmented contest (Laakso–Taagepera)"
           heightPx={320}
+          takeaway={chartTakeaway("enp")}
         >
           {enp && enp.length > 0 && <EChart option={enpRegionOption(enp)} height="fill" />}
         </ChartCard>
@@ -81,6 +83,7 @@ export default function DeepInsights() {
           title="Pedersen volatility by region"
           subtitle="Net share churn between elections — 20+ = high in academic literature"
           heightPx={320}
+          takeaway={chartTakeaway("pedersen")}
         >
           {pedersen && pedersen.length > 0 && (
             <EChart
@@ -134,6 +137,7 @@ export default function DeepInsights() {
         title="Party swing (pp) by region · 2021 → 2026"
         subtitle="Heatmap of vote-share change in percentage points. Green = gain, red = loss."
         heightPx={420}
+        takeaway={chartTakeaway("swing")}
       >
         {swing && swing.length > 0 && <EChart option={swingHeatmapOption(swing)} height="fill" />}
       </ChartCard>
@@ -143,6 +147,7 @@ export default function DeepInsights() {
           title="Anti-incumbency by region"
           subtitle="Share of seats where the 2021 winning party did not win in 2026"
           heightPx={320}
+          takeaway={chartTakeaway("anti_inc")}
         >
           {anti && anti.length > 0 && (
             <EChart option={antiIncumbencyOption(anti)} height="fill" />
@@ -153,6 +158,7 @@ export default function DeepInsights() {
           title="Vote share vs seat share · 2026"
           subtitle="Gap indicates first-past-the-post amplification or under-representation"
           heightPx={320}
+          takeaway={chartTakeaway("rep_gap")}
         >
           {gap?.["2026"] && gap["2026"].length > 0 && (
             <EChart option={representationGapOption(gap["2026"])} height="fill" />
@@ -165,6 +171,7 @@ export default function DeepInsights() {
           title="Race competitiveness · 2026"
           subtitle="Bucketed by combined top-2 vote share"
           heightPx={300}
+          takeaway={chartTakeaway("race_type")}
         >
           {races && races.length > 0 && <EChart option={raceTypeOption(races)} height="fill" />}
         </ChartCard>
@@ -242,11 +249,13 @@ function ChartCard({
   title,
   subtitle,
   heightPx,
+  takeaway,
   children,
 }: {
   title: string;
   subtitle?: string;
   heightPx: number;
+  takeaway?: string;
   children: React.ReactNode;
 }) {
   return (
@@ -260,7 +269,10 @@ function ChartCard({
           <p className="text-[10px] text-[var(--color-muted)] mt-0.5 leading-snug">{subtitle}</p>
         )}
       </header>
-      <div className="flex-1 min-h-0 px-3 py-2 overflow-hidden">{children}</div>
+      <div className="flex-1 min-h-0 px-3 py-2 overflow-hidden flex flex-col">
+        <div className="flex-1 min-h-0">{children}</div>
+        {takeaway && <ChartTakeaway text={takeaway} />}
+      </div>
     </section>
   );
 }

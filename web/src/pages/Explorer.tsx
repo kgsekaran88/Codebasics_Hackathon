@@ -31,7 +31,7 @@ function buildParams(state: FilterState): URLSearchParams {
 }
 
 export default function Explorer() {
-  const { bullets } = usePageInsights("explorer");
+  const { bullets, chartTakeaway } = usePageInsights("explorer");
   const { data: meta } = useApi(() => api.filterMeta(), []);
   const [filters, setFilters] = useState<FilterState>(defaultFilters);
   const [selected, setSelected] = useState<AcRow | null>(null);
@@ -116,6 +116,7 @@ export default function Explorer() {
               subtitle="2026 winners in current filter · hover bars for counts"
               height="fill"
               testId="explorer-tally-chart"
+              takeaway={chartTakeaway("tally")}
             >
               {loading ? (
                 <p className="text-[var(--color-muted)] text-sm">Loading…</p>
@@ -131,6 +132,7 @@ export default function Explorer() {
               subtitle="Each dot = one AC · scroll/zoom · click dot or table row for detail"
               height="fill"
               testId="explorer-scatter-chart"
+              takeaway={chartTakeaway("scatter")}
             >
               {loading ? (
                 <p className="text-[var(--color-muted)] text-sm">Loading…</p>

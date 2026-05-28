@@ -12,7 +12,7 @@ import { chartPageStackRows } from "../lib/panelLayout";
 
 export default function SeatFlows() {
   const [full, setFull] = useState(false);
-  const { bullets } = usePageInsights("flows");
+  const { bullets, chartTakeaway } = usePageInsights("flows");
   const { data: sankey } = useApi(() => api.sankey(full), [full]);
   const { data: retention } = useApi(() => api.partyRetention(), []);
 
@@ -41,6 +41,7 @@ export default function SeatFlows() {
           subtitle="Band width = constituencies · hover for counts"
           height="fill"
           testId="sankey-chart"
+          takeaway={chartTakeaway("sankey")}
         >
           {sankey && sankey.length > 0 && (
             <EChart option={sankeyOption(sankey)} height="fill" />
@@ -52,6 +53,7 @@ export default function SeatFlows() {
           subtitle="Share of 2021 seats each party still held in 2026"
           height="fill"
           testId="retention-chart"
+          takeaway={chartTakeaway("retention")}
         >
           {retention && <EChart option={retentionOption(retention)} height="fill" />}
         </ChartPanel>

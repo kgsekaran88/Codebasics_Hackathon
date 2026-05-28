@@ -511,19 +511,19 @@ def get_insights(year: str = "2026") -> dict:
 
     static_pages = {
         "flows": [
-            f"Largest seat flow: {top_flow['source']} (2021) → {top_flow['target']} (2026), {int(top_flow['seats'])} constituencies.",
+            f"Largest seat flow: {top_flow['source']} (2021) → {top_flow['target']} (2026), {int(top_flow['seats'])} constituencies ({round(100 * int(top_flow['seats']) / n, 1)}% of 234).",
             f"DMK retained {dmk_kept} of {dmk_held} seats it won in 2021 ({dmk_ret_pct:.0f}% retention on this label).",
-            "Sankey bands count constituencies; hover for exact seat counts between party labels.",
+            f"{flips} ACs ({round(100 * flips / n, 1)}%) changed normalized winner — band width in the Sankey is seat count.",
         ],
         "margins": [
-            f"{under5} constituencies had a 2026 winning margin under 5 percentage points.",
-            f"Only {over50} winners cleared 50% of valid votes in 2026 — few landslide mandates.",
-            "Each dot is one AC: compare 2021 vs 2026 margin; pan/zoom on the scatter chart.",
+            f"Mean winning margin fell from {m21}% (2021) to {m26}% (2026) — races tightened on average.",
+            f"{under5} constituencies had a 2026 winning margin under 5 percentage points; {under35_26} winners held under 35% vote share.",
+            f"Only {over50} winners cleared 50% of valid votes in 2026 — few majority mandates on the ballot.",
         ],
         "reserved": [
-            f"SC-reserved seats: {int(sc_row['flips'])} flips of {int(sc_row['total_acs'])} ({float(sc_row['flip_pct']):.1f}%).",
+            f"SC-reserved seats: {int(sc_row['flips'])} flips of {int(sc_row['total_acs'])} ({float(sc_row['flip_pct']):.1f}%) — compare to statewide {round(100 * flips / n, 1)}% flip rate.",
             "188 GEN, 44 SC, and 2 ST constituencies — same reservation map in 2021 and 2026.",
-            "Counts describe seat outcomes, not community voting behaviour.",
+            "Seat counts by category describe outcomes on normalized party labels, not demographic voting.",
         ],
         "depth": [
             f"2021 average reported turnout: {turnout_2021_avg}% (constituency-level in starter CSV).",
@@ -531,10 +531,73 @@ def get_insights(year: str = "2026") -> dict:
             "Booth-level and age breakdowns are not in the provided ECI starter files.",
         ],
         "explorer": [
-            "Filters apply to all 234 ACs — charts and table update together.",
-            "Click a scatter point or table row to see 2021 vs 2026 winner and margin for that constituency.",
+            "Filters apply to all 234 ACs — scatter, table, and detail card update together.",
+            "Points below the dashed diagonal had a lower 2026 margin than in 2021 (tighter races).",
+            "Use region chips to compare macro-zones; click any AC for winner and margin detail.",
         ],
         "deep": _deep_bullets(enp21, enp26, ped, lsq21, lsq26, enp_reg, pedersen_reg, repgap26, races),
+    }
+
+    tvk_seat_pct = round(100 * tvk / n, 1)
+    dmk_seat_pct = round(100 * dmk21 / n, 1)
+    chart_takeaways = {
+        "overview": {
+            "seat_tally": (
+                f"TVK's {tvk} seats = {tvk_seat_pct}% of the assembly — majority needs 118."
+                if year == "2026"
+                else f"DMK's {dmk21} seats = {dmk_seat_pct}% of the assembly — majority needs 118."
+            ),
+            "vote_share": (
+                f"TVK won {tvk_share:.1f}% of valid votes statewide — compare seat share vs vote share on Deep insights."
+                if year == "2026"
+                else f"DMK held {dmk_vote21:.1f}% statewide vote share in 2021 on normalized labels."
+            ),
+            "mosaic": f"{flips} of {n} tiles ({round(100 * flips / n, 1)}%) changed winner colour vs 2021 — scan clusters for regional churn.",
+        },
+        "geography": {
+            "district_map": (
+                f"Highest flip macro-region: {top_flip_region['region']} ({float(top_flip_region['flip_pct']):.1f}% of its ACs)."
+                if year == "2026"
+                else "Map shows 2026 winners; regional stack below reflects 2021 seat split."
+            ),
+            "regional_seats": (
+                f"Stack heights sum seats per macro-region in {year} — totals printed above each column."
+            ),
+            "flip_rate": f"Statewide flip rate: {round(100 * flips / n, 1)}% — bars rank macro-regions by % of ACs that changed winner.",
+            "vote_share_region": f"100% stacked bars show how valid votes split by party within each macro-region ({year}).",
+        },
+        "flows": {
+            "sankey": f"Thickest band: {top_flow['source']} → {top_flow['target']} ({int(top_flow['seats'])} seats).",
+            "retention": f"DMK kept {dmk_kept}/{dmk_held} seats won in 2021 ({dmk_ret_pct:.0f}% retention).",
+        },
+        "margins": {
+            "scatter": f"State averages: {m21}% margin (2021) vs {m26}% (2026). Below the diagonal = tighter race in 2026.",
+            "buckets": f"{under35_26} winners under 35% vote share — pluralities, not majority mandates.",
+            "closest": f"{under5} races decided by under 5 percentage points in 2026.",
+        },
+        "reserved": {
+            "flip": f"SC-reserved flip rate {float(sc_row['flip_pct']):.1f}% vs statewide {round(100 * flips / n, 1)}%.",
+            "seats": "Seat bars by party within each reservation category (2026 winners).",
+        },
+        "depth": {
+            "turnout_region": f"2021 turnout averages {turnout_2021_avg}% statewide — 2026 turnout not in starter CSV.",
+            "turnout_delta": "Constituencies with the largest reported turnout gain vs 2021 (when 2026 per-AC data is loaded).",
+            "turnout_margin": "Each dot links 2021 turnout to 2026 margin — descriptive only, not causal.",
+            "candidates": f"Mean {avg_candidates} candidates per 2026 ballot — crowded races correlate with lower winner shares.",
+            "nota": "Highest NOTA shares flag constituencies where protest / withheld preference was largest.",
+        },
+        "deep": {
+            "enp": f"Statewide effective parties: {enp21:.2f} (2021) → {enp26:.2f} (2026) — more fragmentation in vote shares.",
+            "pedersen": f"Statewide Pedersen volatility: {ped:.1f} — net party vote-share churn between elections.",
+            "swing": "Green = party gained vote share vs 2021 in that region; red = loss (percentage points).",
+            "anti_inc": "Share of seats where the 2021 winning party did not retain the seat in 2026.",
+            "rep_gap": "Bars compare seat share vs vote share — gap shows over- or under-representation in seats.",
+            "race_type": "Multi-cornered races: top two combined under 70% of valid votes in 2026.",
+        },
+        "explorer": {
+            "tally": "Seat bars reflect only constituencies matching your active filters.",
+            "scatter": "Below the diagonal: 2026 margin lower than 2021 (tighter race) in the filtered set.",
+        },
     }
 
     pages: dict = {}
@@ -610,6 +673,7 @@ def get_insights(year: str = "2026") -> dict:
         "data_scope": data_scope,
         "research_notes": research_notes,
         "pages": pages,
+        "chart_takeaways": chart_takeaways,
     }
 
 

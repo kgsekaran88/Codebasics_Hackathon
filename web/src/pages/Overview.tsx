@@ -13,6 +13,7 @@ import EChart from "../components/EChart";
 import YearToggle from "../components/YearToggle";
 import StoryFocusBanner from "../components/StoryFocusBanner";
 import RegionChips from "../components/RegionChips";
+import ChartTakeaway from "../components/ChartTakeaway";
 import { seatTallyOption, voteShareBarOption } from "../charts/options";
 import {
   chartAreaMosaic,
@@ -26,7 +27,7 @@ export default function Overview() {
   const { year, setYear } = useYear();
   const [regions, setRegions] = useState<string[]>([]);
   const [selected, setSelected] = useState<AcRow | null>(null);
-  const { bullets } = usePageInsights("overview", year);
+  const { bullets, chartTakeaway } = usePageInsights("overview", year);
 
   const { data: kpis, error: ek } = useApi(() => api.kpis(year), [year]);
   const { data: tally } = useApi(() => api.seatTally(), []);
@@ -84,9 +85,14 @@ export default function Overview() {
           className={`${panelHeightLg} ${panelBody}`}
         >
           <PartyLegend />
-          <div className={`${chartAreaMosaic} mt-1`}>
-            {comparison && (
-              <MosaicGrid rows={comparison} year={year} onSelect={setSelected} />
+          <div className={`${chartAreaMosaic} mt-1 flex flex-col min-h-0`}>
+            <div className="flex-1 min-h-0">
+              {comparison && (
+                <MosaicGrid rows={comparison} year={year} onSelect={setSelected} />
+              )}
+            </div>
+            {chartTakeaway("mosaic") && (
+              <ChartTakeaway text={chartTakeaway("mosaic")} />
             )}
           </div>
           {selected && (
@@ -102,6 +108,7 @@ export default function Overview() {
             subtitle="Assembly seats by party"
             height="fill"
             testId="seat-tally-chart"
+            takeaway={chartTakeaway("seat_tally")}
           >
             {tallyRows.length > 0 && (
               <EChart option={seatTallyOption(tallyRows, year)} height="fill" />
@@ -112,6 +119,7 @@ export default function Overview() {
             subtitle="Statewide valid votes (horizontal bars)"
             height="fill"
             testId="vote-share-chart"
+            takeaway={chartTakeaway("vote_share")}
           >
             {voteRows.length > 0 && (
               <EChart option={voteShareBarOption(voteRows, year)} height="fill" />

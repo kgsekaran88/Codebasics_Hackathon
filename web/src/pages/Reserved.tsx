@@ -6,6 +6,7 @@ import ChartPanel from "../components/ChartPanel";
 import InsightPanel from "../components/InsightPanel";
 import { SupplementaryBanner } from "../components/StoryFocusBanner";
 import EChart from "../components/EChart";
+import ChartTakeaway from "../components/ChartTakeaway";
 import { flipBarOption } from "../charts/options";
 import { partyColor } from "../lib/colors";
 import { pageChartGrid2, panelBody, panelHeightMd, tableScroll } from "../lib/panelLayout";
@@ -13,7 +14,7 @@ import { pageChartGrid2, panelBody, panelHeightMd, tableScroll } from "../lib/pa
 const CATEGORIES = ["GEN", "SC", "ST"] as const;
 
 export default function Reserved() {
-  const { bullets } = usePageInsights("reserved");
+  const { bullets, chartTakeaway } = usePageInsights("reserved");
   const { data: flips } = useApi(() => api.flipsByReserved(), []);
   const { data: full } = useApi(() => api.reservedBreakdownFull(), []);
   const { data: marginSummary } = useApi(() => api.reservedMarginSummary(), []);
@@ -44,6 +45,7 @@ export default function Reserved() {
             subtitle="% of ACs with changed normalized winner (2021→2026)"
             height="fill"
             testId="reserved-flip-chart"
+            takeaway={chartTakeaway("flip")}
           >
             {flips && <EChart option={flipBarOption(flips, "reserved")} height="fill" />}
           </ChartPanel>
@@ -140,6 +142,7 @@ export default function Reserved() {
               </tbody>
             </table>
           </div>
+          {chartTakeaway("seats") && <ChartTakeaway text={chartTakeaway("seats")} />}
         </Panel>
       </ChartViewport>
     </DashboardShell>

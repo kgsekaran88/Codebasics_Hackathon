@@ -28,7 +28,7 @@ const H = {
 export default function Geography() {
   const { year, setYear } = useYear();
   const [mapMode, setMapMode] = useState<DistrictMapMode>("party");
-  const { bullets } = usePageInsights("geography", year);
+  const { bullets, chartTakeaway } = usePageInsights("geography", year);
   const { data: regional } = useApi(() => api.regionalSeats(), []);
   const { data: flips } = useApi(() => api.flipsByRegion(), []);
   const { data: voteRegion } = useApi(() => api.voteShareByRegion(), []);
@@ -98,6 +98,7 @@ export default function Geography() {
             }
             heightPx={H.mapRow}
             testId="district-map-panel"
+            takeaway={chartTakeaway("district_map")}
           >
             <div className="flex flex-col h-full min-h-0">
               <div className="flex-1 min-h-0 relative w-full" data-testid="district-map">
@@ -120,6 +121,7 @@ export default function Geography() {
             subtitle="Party seat count per region · totals above each bar"
             heightPx={H.mapRow}
             testId="regional-seats-chart"
+            takeaway={chartTakeaway("regional_seats")}
           >
             {regionalRows.length > 0 && (
               <EChart option={regionalStackOption(regionalRows)} height="fill" />
@@ -132,6 +134,7 @@ export default function Geography() {
           subtitle="% of constituencies with a different winner vs 2021"
           heightPx={H.flip}
           testId="regional-flip-chart"
+          takeaway={chartTakeaway("flip_rate")}
         >
           {flips && <EChart option={flipBarVerticalOption(flips)} height="fill" />}
         </FixedChartPanel>
@@ -141,6 +144,7 @@ export default function Geography() {
           subtitle="Stacked party vote share within each macro-region (Q3 by-region)"
           heightPx={H.voteShare}
           testId="regional-vote-share-chart"
+          takeaway={chartTakeaway("vote_share_region")}
         >
           {voteRows.length > 0 && (
             <EChart option={regionalVoteShareOption(voteRows, year)} height="fill" />

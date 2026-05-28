@@ -13,6 +13,7 @@ import {
   bucketOption,
   type MarginBubbleSizeMode,
 } from "../charts/options";
+import ChartTakeaway from "../components/ChartTakeaway";
 import { panelBody, tableScroll } from "../lib/panelLayout";
 
 const H = {
@@ -35,7 +36,7 @@ export default function Margins() {
   const [sizeMode, setSizeMode] = useState<MarginBubbleSizeMode>("margin_shift");
   const [fixedSize, setFixedSize] = useState(14);
   const [scaleMax, setScaleMax] = useState(24);
-  const { bullets } = usePageInsights("margins");
+  const { bullets, chartTakeaway } = usePageInsights("margins");
   const { data: comparison } = useApi(() => api.comparison(new URLSearchParams()), []);
   const { data: buckets } = useApi(() => api.winnerBuckets(), []);
   const { data: closest } = useApi(() => api.closestRaces(), []);
@@ -79,6 +80,7 @@ export default function Margins() {
           subtitle={`Each dot = one AC · ${SCATTER_SUBTITLE[sizeMode]} · pan/zoom enabled`}
           heightPx={H.scatter}
           testId="margin-scatter-chart"
+          takeaway={chartTakeaway("scatter")}
           toolbar={
             <BubbleScatterControls
               sizeMode={sizeMode}
@@ -98,6 +100,7 @@ export default function Margins() {
             title="Winner vote share buckets"
             subtitle="2026 — share of valid votes for the winner"
             heightPx={H.buckets}
+            takeaway={chartTakeaway("buckets")}
           >
             {buckets && <EChart option={bucketOption(buckets)} height="fill" />}
           </FixedChartPanel>
@@ -128,6 +131,9 @@ export default function Margins() {
                 </tbody>
               </table>
             </div>
+            {chartTakeaway("closest") && (
+              <ChartTakeaway text={chartTakeaway("closest")} />
+            )}
           </Panel>
         </div>
       </ChartViewport>

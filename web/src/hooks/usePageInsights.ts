@@ -14,8 +14,11 @@ export type InsightPage =
 
 export function usePageInsights(page: InsightPage, year: Year = "2026") {
   const { data } = useApi(() => api.insights(year), [year]);
+  const chartTakeaways = data?.chart_takeaways?.[page] ?? {};
   return {
     bullets: data?.pages[page] ?? [],
+    chartTakeaways,
+    chartTakeaway: (key: string) => chartTakeaways[key] ?? "",
     headline: data?.headline,
     researchNotes: data?.research_notes,
     dataScope: data?.data_scope,

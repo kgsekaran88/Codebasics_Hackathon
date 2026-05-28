@@ -1,6 +1,14 @@
 import type { EChartsOption } from "echarts";
 import { partyColor, REGION_COLORS, REGION_ORDER, REGION_SHORT } from "../lib/colors";
 import { grid as chartGrid, sankeyBox } from "./chartLayout";
+import {
+  AC_TOTAL,
+  avgMarkLineX,
+  MAJORITY_SEATS,
+  marginAvgMarkLines,
+  mean,
+  pctOfAssembly,
+} from "./insightHelpers";
 
 const axisStyle = {
   axisLine: { lineStyle: { color: "#2a3548" } },
@@ -42,9 +50,29 @@ export function seatTallyOption(
           }))
           .reverse(),
         label: { show: true, position: "right", color: "#e8edf5", fontSize: 11, distance: 5 },
+        markLine: {
+          ...avgMarkLineX(MAJORITY_SEATS, `Majority (${MAJORITY_SEATS})`),
+          z: 0,
+        },
       },
     ],
-    tooltip: { trigger: "axis", axisPointer: { type: "shadow" }, ...tooltipBase },
+    tooltip: {
+      trigger: "axis",
+      axisPointer: { type: "shadow" },
+      ...tooltipBase,
+      formatter: (raw) => {
+        const p = (Array.isArray(raw) ? raw[0] : raw) as { name: string; value: number };
+        const seats = Number(p.value);
+        const gap = MAJORITY_SEATS - seats;
+        const gapNote =
+          gap > 0
+            ? `<br/><span style="color:#8b9bb4">${gap} short of majority (${MAJORITY_SEATS})</span>`
+            : gap < 0
+              ? `<br/><span style="color:#8b9bb4">${-gap} above majority threshold</span>`
+              : `<br/><span style="color:#8b9bb4">At majority threshold</span>`;
+        return `<strong>${p.name}</strong><br/>${seats} seats · ${pctOfAssembly(seats)}${gapNote}`;
+      },
+    },
   };
 }
 
@@ -96,7 +124,7 @@ export function voteShareBarOption(
       formatter: (p: unknown) => {
         const params = Array.isArray(p) ? p[0] : p;
         const d = params as { name: string; value: number };
-        return `<strong>${d.name}</strong>: ${d.value}% vote share`;
+        return `<strong>${d.name}</strong><br/>${d.value}% of statewide valid votes<br/><span style="color:#8b9bb4">Excludes NOTA · normalized party labels</span>`;
       },
     },
   };
@@ -167,7 +195,8 @@ export function sankeyOption(
       formatter: (raw) => {
         const p = raw as { name?: string; data?: { source?: string; target?: string; value?: number } };
         if (p.data?.source && p.data?.target) {
-          return `${p.data.source} → ${p.data.target}<br/>${p.data.value} seats`;
+          const v = Number(p.data.value);
+          return `${p.data.source} → ${p.data.target}<br/><strong>${v}</strong> seats · ${pctOfAssembly(v)}`;
         }
         return p.name ?? "";
       },
@@ -303,6 +332,8 @@ export function marginBeeswarmOption(
   const xExt = marginAxisExtent(xVals);
   const yExt = marginAxisExtent(yVals);
   const axisMax = Math.max(xExt.max, yExt.max);
+  const avgX = mean(xVals);
+  const avgY = mean(yVals);
 
   return {
     backgroundColor: "transparent",
@@ -337,11 +368,23 @@ export function marginBeeswarmOption(
         const d = p.data;
         if (!d) return "";
         const title = d.ac_name ? `${d.ac_number}. ${d.ac_name}` : p.seriesName ?? "";
+        const delta =
+          d.margin_pct_2026 != null && d.margin_pct_2021 != null
+            ? d.margin_pct_2026 - d.margin_pct_2021
+            : null;
+        const deltaLine =
+          delta != null
+            ? `<br/>Shift: ${delta >= 0 ? "+" : ""}${delta.toFixed(1)} pp · ${delta < 0 ? "tighter" : "wider"} vs 2021`
+            : "";
         const extra =
           sizeMode !== "fixed"
             ? `<br/><em>${marginSizeMetricLabel(sizeMode, d)}</em>`
             : "";
-        return `${title}<br/>2021 margin: ${d.margin_pct_2021?.toFixed(1)}%<br/>2026 margin: ${d.margin_pct_2026?.toFixed(1)}%${extra}`;
+        const frag =
+          d.winner_share_pct_2026 != null
+            ? `<br/>Winner share 2026: ${d.winner_share_pct_2026.toFixed(1)}%`
+            : "";
+        return `${title}<br/>2021 margin: ${d.margin_pct_2021?.toFixed(1)}%<br/>2026 margin: ${d.margin_pct_2026?.toFixed(1)}%${deltaLine}${frag}${extra}`;
       },
     },
     legend: {
@@ -366,7 +409,7 @@ export function marginBeeswarmOption(
         ],
         z: 0,
       },
-      ...regions.map((region) => ({
+      ...regions.map((region, ri) => ({
         name: REGION_SHORT[region as keyof typeof REGION_SHORT] ?? region,
         type: "scatter" as const,
         z: 2,
@@ -391,6 +434,7 @@ export function marginBeeswarmOption(
         }),
         itemStyle: { color: REGION_COLORS[region] ?? "#78909C", opacity: 0.82 },
         emphasis: { scale: 1.12 },
+        ...(ri === 0 ? { markLine: marginAvgMarkLines(avgX, avgY) } : {}),
       })),
     ],
   };
@@ -449,9 +493,10 @@ export function districtMapOption(
         if (!d) return "";
         const title = d.display ?? d.name;
         if (mode === "party") {
-          return `${title}<br/>2026 lead: ${d.winner_party_norm_2026} (${d.ac_count} ACs in district)`;
+          return `${title}<br/>2026 lead: <strong>${d.winner_party_norm_2026}</strong><br/>${d.ac_count} assembly segment(s) in district`;
         }
-        return `${title}<br/>Flip rate: ${d.flip_pct}% (${d.flips}/${d.ac_count} ACs)`;
+        const pct = d.ac_count ? ((d.flips / d.ac_count) * 100).toFixed(1) : "0";
+        return `${title}<br/>Flip rate: <strong>${pct}%</strong><br/>${d.flips} of ${d.ac_count} ACs changed winner`;
       },
     },
     visualMap:
@@ -648,7 +693,17 @@ export function flipBarVerticalOption(
       ...axisStyle,
       axisLabel: { ...axisStyle.axisLabel, formatter: "{value}%", fontSize: 10 },
     },
-    tooltip: { trigger: "axis", axisPointer: { type: "shadow" }, ...tooltipBase },
+    tooltip: {
+      trigger: "axis",
+      axisPointer: { type: "shadow" },
+      ...tooltipBase,
+      formatter: (raw) => {
+        const p = (Array.isArray(raw) ? raw[0] : raw) as { dataIndex: number };
+        const row = ordered[p.dataIndex];
+        const name = row.region ?? labels[p.dataIndex];
+        return `<strong>${name}</strong><br/>${row.flips} flips · ${row.flip_pct}% of regional ACs`;
+      },
+    },
     series: [
       {
         type: "bar",
@@ -721,7 +776,18 @@ export function flipBarOption(
       axisTick: { show: false },
       axisLine: axisStyle.axisLine,
     },
-    tooltip: { trigger: "axis", axisPointer: { type: "shadow" }, ...tooltipBase },
+    tooltip: {
+      trigger: "axis",
+      axisPointer: { type: "shadow" },
+      ...tooltipBase,
+      formatter: (raw) => {
+        const p = (Array.isArray(raw) ? raw[0] : raw) as { dataIndex: number };
+        const row = ordered[p.dataIndex];
+        const label = (isRegion ? row.region : row.reserved) ?? "";
+        const total = row.total ? ` of ${row.total}` : "";
+        return `<strong>${label}</strong><br/>${row.flips} flips · ${row.flip_pct}%${total}`;
+      },
+    },
     series: [
       {
         type: "bar",
@@ -789,7 +855,17 @@ export function retentionOption(
         },
       },
     ],
-    tooltip: { trigger: "axis", axisPointer: { type: "shadow" }, ...tooltipBase },
+    tooltip: {
+      trigger: "axis",
+      axisPointer: { type: "shadow" },
+      ...tooltipBase,
+      formatter: (raw) => {
+        const p = (Array.isArray(raw) ? raw[0] : raw) as { dataIndex: number };
+        const row = top[p.dataIndex];
+        const lost = row.held_2021 - row.retained_2026;
+        return `<strong>${row.party}</strong><br/>Kept ${row.retained_2026} of ${row.held_2021} 2021 seats (${row.retention_pct}%)<br/><span style="color:#8b9bb4">${lost} seat(s) changed hands</span>`;
+      },
+    },
   };
 }
 
@@ -832,8 +908,14 @@ export function bucketOption(rows: { bucket: string; count: number }[]): ECharts
       formatter: (raw) => {
         const items = Array.isArray(raw) ? raw : [raw];
         const p = items[0] as { name: string; value: number };
-        const pct = Math.round((p.value / 234) * 100);
-        return `<strong>${p.name}</strong> margin<br/>${p.value} ACs · ${pct}% of 234`;
+        const pct = Math.round((p.value / AC_TOTAL) * 100);
+        const hint =
+          p.name.includes("<35")
+            ? "<br/><span style='color:#8b9bb4'>Pluralities — winner below 35% valid votes</span>"
+            : p.name.includes("50")
+              ? "<br/><span style='color:#8b9bb4'>Majority mandates on valid votes</span>"
+              : "";
+        return `<strong>${p.name}</strong><br/>${p.value} ACs · ${pct}% of ${AC_TOTAL}${hint}`;
       },
     },
   };
@@ -986,7 +1068,19 @@ export function enpRegionOption(
       nameTextStyle: { color: "#8b9bb4", fontSize: 10 },
       nameGap: 14,
     },
-    tooltip: { trigger: "axis", axisPointer: { type: "shadow" }, ...tooltipBase },
+    tooltip: {
+      trigger: "axis",
+      axisPointer: { type: "shadow" },
+      ...tooltipBase,
+      formatter: (raw) => {
+        const items = Array.isArray(raw) ? raw : [raw];
+        if (!items.length) return "";
+        const idx = (items[0] as { dataIndex: number }).dataIndex;
+        const row = data[idx];
+        const delta = row.enp_2026 - row.enp_2021;
+        return `<strong>${row.region}</strong><br/>2021 ENP: ${row.enp_2021.toFixed(2)}<br/>2026 ENP: ${row.enp_2026.toFixed(2)}<br/><span style="color:#8b9bb4">Δ ${delta >= 0 ? "+" : ""}${delta.toFixed(2)} — higher = more fragmented</span>`;
+      },
+    },
     series: [
       {
         name: "2021",
@@ -1122,7 +1216,25 @@ export function representationGapOption(
       ...axisStyle,
       axisLabel: { color: "#e8edf5", fontSize: 11 },
     },
-    tooltip: { trigger: "axis", axisPointer: { type: "shadow" }, ...tooltipBase },
+    tooltip: {
+      trigger: "axis",
+      axisPointer: { type: "shadow" },
+      ...tooltipBase,
+      formatter: (raw) => {
+        const items = Array.isArray(raw) ? raw : [raw];
+        if (!items.length) return "";
+        const idx = (items[0] as { dataIndex: number }).dataIndex;
+        const row = top[idx];
+        const gap = row.representation_gap_pp;
+        const dir =
+          gap > 0
+            ? "seats &gt; votes (over-represented in assembly)"
+            : gap < 0
+              ? "votes &gt; seats (under-represented)"
+              : "aligned";
+        return `<strong>${row.party_norm}</strong><br/>Vote: ${row.vote_share_pct.toFixed(1)}% · Seats: ${row.seat_share_pct.toFixed(1)}%<br/>Gap: ${gap >= 0 ? "+" : ""}${gap.toFixed(1)} pp · ${dir}`;
+      },
+    },
     series: [
       {
         name: "Vote share",
@@ -1167,7 +1279,16 @@ export function raceTypeOption(rows: { race_type: string; count: number }[]): EC
       nameTextStyle: { color: "#8b9bb4", fontSize: 10 },
       nameGap: 14,
     },
-    tooltip: { trigger: "axis", axisPointer: { type: "shadow" }, ...tooltipBase },
+    tooltip: {
+      trigger: "axis",
+      axisPointer: { type: "shadow" },
+      ...tooltipBase,
+      formatter: (raw) => {
+        const p = (Array.isArray(raw) ? raw[0] : raw) as { name: string; value: number };
+        const pct = Math.round((p.value / AC_TOTAL) * 100);
+        return `<strong>${p.name}</strong><br/>${p.value} ACs · ${pct}% of ${AC_TOTAL}`;
+      },
+    },
     series: [
       {
         type: "bar",

@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import ChartTakeaway from "./ChartTakeaway";
 
 /**
  * Chart panel with a guaranteed pixel height so ECharts always has room to render.
@@ -9,6 +10,7 @@ export default function FixedChartPanel({
   subtitle,
   heightPx,
   toolbar,
+  takeaway,
   children,
   testId,
 }: {
@@ -16,6 +18,7 @@ export default function FixedChartPanel({
   subtitle?: string;
   heightPx: number;
   toolbar?: ReactNode;
+  takeaway?: string;
   children: ReactNode;
   testId?: string;
 }) {
@@ -36,7 +39,10 @@ export default function FixedChartPanel({
           {toolbar && <div className="shrink-0">{toolbar}</div>}
         </div>
       </header>
-      <div className="flex-1 min-h-0 px-3 py-2 overflow-hidden">{children}</div>
+      <div className="flex-1 min-h-0 px-3 py-2 overflow-hidden flex flex-col">
+        <div className="flex-1 min-h-0">{children}</div>
+        {takeaway && <ChartTakeaway text={takeaway} />}
+      </div>
     </section>
   );
 }

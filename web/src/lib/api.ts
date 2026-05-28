@@ -80,6 +80,7 @@ export interface InsightsPayload {
   headline: string;
   data_scope: DataScope;
   pages: Record<string, string[]>;
+  chart_takeaways?: Record<string, Record<string, string>>;
   research_notes: Record<string, ResearchNote>;
 }
 

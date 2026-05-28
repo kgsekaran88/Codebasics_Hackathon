@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { Panel } from "./DashboardShell";
+import ChartTakeaway from "./ChartTakeaway";
 import {
   chartAreaCompact,
   panelBody,
@@ -25,6 +26,7 @@ interface Props {
   height?: Height;
   testId?: string;
   nonChart?: boolean;
+  takeaway?: string;
 }
 
 /** Standard chart panel: fixed height + compact chart slot (no overlap). */
@@ -35,6 +37,7 @@ export default function ChartPanel({
   height = "md",
   testId,
   nonChart,
+  takeaway,
 }: Props) {
   return (
     <Panel
@@ -45,8 +48,9 @@ export default function ChartPanel({
       {nonChart ? (
         children
       ) : (
-        <div className={chartAreaCompact} data-testid={testId}>
-          {children}
+        <div className={`${chartAreaCompact} flex flex-col`} data-testid={testId}>
+          <div className="flex-1 min-h-0">{children}</div>
+          {takeaway && <ChartTakeaway text={takeaway} />}
         </div>
       )}
     </Panel>

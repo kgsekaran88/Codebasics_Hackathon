@@ -16,7 +16,7 @@ import {
 } from "../charts/options";
 
 export default function ConstituencyDepth() {
-  const { bullets, dataScope } = usePageInsights("depth");
+  const { bullets, dataScope, chartTakeaway } = usePageInsights("depth");
   const { data: turnout } = useApi(() => api.turnoutByRegion(), []);
   const { data: buckets } = useApi(() => api.candidateBuckets(), []);
   const { data: nota } = useApi(() => api.notaAll(), []);
@@ -57,6 +57,11 @@ export default function ConstituencyDepth() {
           }
           height="fill"
           testId="turnout-headline-chart"
+          takeaway={
+            turnoutTop?.has_2026_turnout
+              ? chartTakeaway("turnout_delta")
+              : chartTakeaway("turnout_region")
+          }
         >
           {turnoutTop?.has_2026_turnout && turnoutTop.rows.length > 0 ? (
             <EChart option={turnoutDeltaOption(turnoutTop.rows)} height="fill" />
@@ -70,6 +75,7 @@ export default function ConstituencyDepth() {
           subtitle="Each dot = one AC · scroll/pinch to zoom · legend by macro-region"
           height="fill"
           testId="turnout-margin-chart"
+          takeaway={chartTakeaway("turnout_margin")}
         >
           {turnoutScatter.length > 0 && (
             <EChart option={turnoutMarginOption(turnoutScatter)} height="fill" />
@@ -81,6 +87,7 @@ export default function ConstituencyDepth() {
           subtitle="How many names appeared per constituency (not booth-level)"
           height="fill"
           testId="candidate-buckets-chart"
+          takeaway={chartTakeaway("candidates")}
         >
           {buckets && <EChart option={candidateBucketOption(buckets)} height="fill" />}
         </ChartPanel>
@@ -90,6 +97,7 @@ export default function ConstituencyDepth() {
           subtitle="NOTA votes as % of valid votes · top 12 constituencies"
           height="fill"
           testId="nota-chart"
+          takeaway={chartTakeaway("nota")}
         >
           {nota && <EChart option={notaBarOption(nota)} height="fill" />}
         </ChartPanel>
